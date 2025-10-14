@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
 import FileIcon from '../assets/FileIcon.vue'
+import LogoText from '@/components/LogoText.vue'
+import ResponseIcon from '@/assets/ResponseIcon.vue'
 
 interface Message {
   id: number
@@ -91,21 +93,13 @@ const handleKeydown = (event: KeyboardEvent) => {
     <!-- Header -->
     <header class="px-50 pt-7 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <FileIcon class="h-8 w-8" />
-        <h1 class="text-2xl font-bold">Doks <i>A</i>I Chat</h1>
+        <LogoText class="text-2xl font-semibold" />
       </div>
       <button class="text-sm text-gray-500 hover:text-gray-700">New Chat</button>
     </header>
 
     <!-- Messages Container -->
     <div ref="messagesContainer" class="flex-1 overflow-y-auto">
-      <!-- Welcome Message -->
-      <div v-if="messages.length === 0" class="text-center py-20">
-        <FileIcon class="h-16 w-16 mx-auto mb-4 text-gray-300" />
-        <h2 class="text-2xl font-semibold text-gray-600 mb-2">Welcome to Doks AI</h2>
-        <p class="text-gray-500">Ask me anything about your documents</p>
-      </div>
-
       <!-- Messages -->
       <div v-for="message in messages" :key="message.id" class="py-6">
         <div class="max-w-4xl mx-auto px-6">
@@ -119,7 +113,7 @@ const handleKeydown = (event: KeyboardEvent) => {
           <!-- AI Response (plain text style like ChatGPT) -->
           <div v-else class="flex items-start gap-3">
             <div class="flex-shrink-0">
-              <FileIcon class="h-6 w-6 text-gray-600 mt-1" />
+              <ResponseIcon class="h-6 w-6 text-gray-600 mt-1" />
             </div>
             <div class="flex-1 min-w-0">
               <div class="text-sm md:text-base text-gray-800 leading-relaxed">
