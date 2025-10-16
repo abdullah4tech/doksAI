@@ -1,22 +1,18 @@
 <script setup lang="ts">
-import { ref, defineEmits } from 'vue'
+import { ref, defineEmits, computed } from 'vue'
 import FileIcon from '../assets/FileIcon.vue'
-
-interface PDF {
-  id: string
-  name: string
-  size: string
-  uploadDate: Date
-  status: 'uploading' | 'ready' | 'error'
-}
+import HealthCheck from './HealthCheck.vue'
+import { useDocumentStore } from '@/store/documents'
 
 const emit = defineEmits<{
   close: []
 }>()
 
+const documentStore = useDocumentStore()
 const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement>()
-const pdfs = ref<PDF[]>([])
+
+const documents = computed(() => documentStore.allDocuments)
 
 const closeModal = () => {
   emit('close')
@@ -53,35 +49,12 @@ const handleFiles = (files: File[]) => {
   const pdfFiles = files.filter((file) => file.type === 'application/pdf')
 
   pdfFiles.forEach((file) => {
-    const newPdf: PDF = {
-      id: Math.random().toString(36).substring(2),
-      name: file.name,
-      size: formatFileSize(file.size),
-      uploadDate: new Date(),
-      status: 'uploading',
-    }
-
-    pdfs.value.push(newPdf)
-
-    setTimeout(() => {
-      const pdf = pdfs.value.find((p) => p.id === newPdf.id)
-      if (pdf) {
-        pdf.status = 'ready'
-      }
-    }, 2000)
+    documentStore.addDocument(file)
   })
 }
 
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes'
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
-
 const removePdf = (id: string) => {
-  pdfs.value = pdfs.value.filter((pdf) => pdf.id !== id)
+  documentStore.removeDocument(id)
 }
 
 const getStatusColor = (status: string) => {
@@ -128,6 +101,11 @@ const getStatusText = (status: string) => {
       </div>
 
       <div class="p-6">
+        <!-- Health Check Section -->
+        <div class="mb-6">
+          <HealthCheck />
+        </div>
+
         <div
           :class="[
             'border-2 border-dashed rounded-xl p-8 text-center transition-colors',
@@ -156,29 +134,41 @@ const getStatusText = (status: string) => {
           />
         </div>
 
-        <div v-if="pdfs.length > 0" class="mt-6">
-          <h3 class="text-lg font-medium mb-4">Uploaded Documents ({{ pdfs.length }})</h3>
+        <div v-if="documents.length > 0" class="mt-6">
+          <h3 class="text-lg font-medium mb-4">Uploaded Documents ({{ documents.length }})</h3>
           <div class="max-h-60 overflow-y-auto">
             <div
-              v-for="pdf in pdfs"
-              :key="pdf.id"
+              v-for="doc in documents"
+              :key="doc.id"
               class="flex items-center justify-between p-3 border rounded-lg mb-2 hover:bg-gray-50"
             >
               <div class="flex items-center gap-3">
                 <FileIcon class="h-5 w-5 text-red-500" />
                 <div>
-                  <p class="font-medium">{{ pdf.name }}</p>
+                  <p class="font-medium">{{ doc.name }}</p>
                   <p class="text-sm text-gray-600">
-                    {{ pdf.size }} • {{ pdf.uploadDate.toLocaleDateString() }}
+                    {{ doc.size }} • {{ doc.uploadDate.toLocaleDateString() }}
+                    <span v-if="doc.totalChunks"> • {{ doc.totalChunks }} chunks</span>
+                  </p>
+                  <div v-if="doc.status === 'uploading'" class="mt-1">
+                    <div class="w-full bg-gray-200 rounded-full h-1.5">
+                      <div
+                        class="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                        :style="{ width: `${documentStore.getDocumentProgress(doc.id)}%` }"
+                      ></div>
+                    </div>
+                  </div>
+                  <p v-if="doc.errorMessage" class="text-xs text-red-500 mt-1">
+                    {{ doc.errorMessage }}
                   </p>
                 </div>
               </div>
               <div class="flex items-center gap-3">
-                <span :class="['text-sm font-medium', getStatusColor(pdf.status)]">
-                  {{ getStatusText(pdf.status) }}
+                <span :class="['text-sm font-medium', getStatusColor(doc.status)]">
+                  {{ getStatusText(doc.status) }}
                 </span>
                 <button
-                  @click="removePdf(pdf.id)"
+                  @click="removePdf(doc.id)"
                   class="text-gray-400 hover:text-red-500 transition"
                 >
                   ×
@@ -199,10 +189,11 @@ const getStatusText = (status: string) => {
         </button>
         <button
           class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-          :disabled="pdfs.length === 0"
-          :class="{ 'opacity-50 cursor-not-allowed': pdfs.length === 0 }"
+          :disabled="documents.length === 0"
+          :class="{ 'opacity-50 cursor-not-allowed': documents.length === 0 }"
+          @click="closeModal"
         >
-          Done ({{ pdfs.length }})
+          Done ({{ documents.length }})
         </button>
       </div>
     </div>

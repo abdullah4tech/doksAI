@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Message, ChatSession } from './types'
 import { v4 as uuidv4 } from 'uuid'
+import { ragAPI, type QueryRequest } from '@/services/api'
+import config from '@/config'
 
 export const useChatStore = defineStore('chat', () => {
   const sessions = ref<Record<string, ChatSession>>({})
@@ -88,6 +90,107 @@ export const useChatStore = defineStore('chat', () => {
     )
   })
 
+  const queryRAG = async (sessionId: string, question: string, docId?: string): Promise<void> => {
+    const session = sessions.value[sessionId]
+    if (!session) return
+
+    isLoading.value = true
+
+    try {
+      // Add user message
+      addMessage(sessionId, {
+        content: question,
+        isUser: true,
+        timestamp: new Date(),
+      })
+
+      // Add initial AI message with streaming state
+      const aiMessageId = session.messages.length
+      addMessage(sessionId, {
+        content: '',
+        isUser: false,
+        timestamp: new Date(),
+        isStreaming: true,
+      })
+
+      // Prepare query request
+      const queryRequest: QueryRequest = {
+        question,
+        top_k: config.DEFAULT_TOP_K,
+        min_score: config.DEFAULT_MIN_SCORE,
+      }
+
+      if (docId) {
+        queryRequest.doc_id = docId
+      }
+
+      // Query the RAG API
+      const response = await ragAPI.queryDocuments(queryRequest)
+
+      if (response.success && response.answer) {
+        // Stream the response
+        await streamResponse(sessionId, aiMessageId, response.answer.text, {
+          sources: response.answer.sources,
+          confidence: response.answer.confidence,
+        })
+      } else {
+        // Handle error case
+        updateMessage(sessionId, aiMessageId, {
+          content: `I apologize, but I encountered an error: ${response.error || 'Unable to process your question'}`,
+          isStreaming: false,
+        })
+      }
+    } catch (error) {
+      console.error('RAG query error:', error)
+      // Find the AI message and update it with error
+      const aiMessageId = session.messages.length - 1
+      updateMessage(sessionId, aiMessageId, {
+        content: `I apologize, but I encountered an error while processing your question: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        isStreaming: false,
+      })
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const streamResponse = async (
+    sessionId: string,
+    messageId: number,
+    text: string,
+    metadata: { sources?: Message['sources']; confidence?: number } = {},
+    delay: number = 30,
+  ): Promise<void> => {
+    const session = sessions.value[sessionId]
+    if (!session) return
+
+    // Stream the text word by word to avoid breaking markdown syntax
+    const words = text.split(' ')
+    let currentText = ''
+
+    for (let i = 0; i < words.length; i++) {
+      currentText += (i === 0 ? '' : ' ') + words[i]
+
+      updateMessage(sessionId, messageId, {
+        content: currentText,
+        sources: metadata.sources,
+        confidence: metadata.confidence,
+      })
+
+      // Small delay to simulate streaming
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+
+    // Mark as finished streaming
+    updateMessage(sessionId, messageId, {
+      content: text,
+      isStreaming: false,
+      sources: metadata.sources,
+      confidence: metadata.confidence,
+    })
+  }
+
   return {
     sessions,
     currentSessionId,
@@ -101,5 +204,7 @@ export const useChatStore = defineStore('chat', () => {
     addMessage,
     updateMessage,
     clearSession,
+    queryRAG,
+    streamResponse,
   }
 })
