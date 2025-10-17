@@ -1,24 +1,19 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted, computed } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import LogoText from '@/components/LogoText.vue'
 import ResponseIcon from '@/assets/ResponseIcon.vue'
 import { useChatStore } from '@/store'
-import { useDocumentStore } from '@/store/documents'
 import { parseMarkdown } from '@/utils/markdown'
 
 const route = useRoute()
 const router = useRouter()
 const chatStore = useChatStore()
-const documentStore = useDocumentStore()
 
 const inputMessage = ref('')
 const messagesContainer = ref<HTMLElement>()
-const selectedDocId = ref<string>('')
 
 const sessionId = route.params.id as string
-
-const readyDocuments = computed(() => documentStore.readyDocuments)
 
 onMounted(async () => {
   chatStore.setCurrentSession(sessionId)
@@ -96,10 +91,9 @@ const sendMessage = async () => {
   if (!inputMessage.value.trim() || chatStore.isLoading) return
 
   const currentInput = inputMessage.value
-  const docId = selectedDocId.value || undefined
   inputMessage.value = ''
 
-  await chatStore.queryRAG(sessionId, currentInput, docId)
+  await chatStore.queryRAG(sessionId, currentInput)
   scrollToBottom()
 }
 
@@ -220,19 +214,6 @@ const getMessageBorderRadius = (content: string) => {
 
     <div class="px-6 py-4">
       <div class="max-w-4xl mx-auto">
-        <!-- Document Selector -->
-        <div v-if="readyDocuments.length > 0" class="mb-3">
-          <select
-            v-model="selectedDocId"
-            class="text-sm border rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Search all documents</option>
-            <option v-for="doc in readyDocuments" :key="doc.id" :value="doc.id">
-              📄 {{ doc.name }}
-            </option>
-          </select>
-        </div>
-
         <div class="border rounded-xl overflow-hidden flex items-end shadow-sm bg-white">
           <textarea
             v-model="inputMessage"
