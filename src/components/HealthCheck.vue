@@ -33,13 +33,13 @@ const getStatusBgColor = (status: string) => {
 </script>
 
 <template>
-  <div class="bg-white border rounded-lg p-4 shadow-sm">
+  <div class="bg-white border rounded-lg p-3 sm:p-4 shadow-sm">
     <div class="flex items-center justify-between mb-3">
-      <h3 class="text-lg font-semibold text-gray-800">API Status</h3>
+      <h3 class="text-base sm:text-lg font-semibold text-gray-800">API Status</h3>
       <button
         @click="checkHealth"
         :disabled="isLoading"
-        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded transition"
+        class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-100 hover:bg-gray-200 rounded transition"
         :class="{ 'opacity-50 cursor-not-allowed': isLoading }"
       >
         {{ isLoading ? 'Checking...' : 'Refresh' }}
@@ -56,12 +56,12 @@ const getStatusBgColor = (status: string) => {
       <p class="text-sm text-red-600">{{ error }}</p>
     </div>
 
-    <div v-else-if="health" class="space-y-3">
-      <div class="flex items-center justify-between">
-        <span class="text-sm font-medium text-gray-700">Overall Status:</span>
+    <div v-else-if="health" class="space-y-2 sm:space-y-3">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+        <span class="text-xs sm:text-sm font-medium text-gray-700">Overall Status:</span>
         <span
           :class="[
-            'px-2 py-1 rounded text-xs font-medium',
+            'px-2 py-1 rounded text-xs font-medium self-start sm:self-auto',
             getStatusColor(health.status),
             getStatusBgColor(health.status),
           ]"
@@ -71,11 +71,11 @@ const getStatusBgColor = (status: string) => {
       </div>
 
       <div class="space-y-2">
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-gray-600">API Service:</span>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+          <span class="text-xs sm:text-sm text-gray-600">API Service:</span>
           <span
             :class="[
-              'px-2 py-1 rounded text-xs',
+              'px-2 py-1 rounded text-xs self-start sm:self-auto',
               getStatusColor(health.services.api),
               getStatusBgColor(health.services.api),
             ]"
@@ -84,11 +84,11 @@ const getStatusBgColor = (status: string) => {
           </span>
         </div>
 
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-gray-600">Vector Database (Qdrant):</span>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+          <span class="text-xs sm:text-sm text-gray-600">Vector Database:</span>
           <span
             :class="[
-              'px-2 py-1 rounded text-xs',
+              'px-2 py-1 rounded text-xs self-start sm:self-auto',
               getStatusColor(health.services.qdrant),
               getStatusBgColor(health.services.qdrant),
             ]"

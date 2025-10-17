@@ -129,35 +129,40 @@ const getMessageBorderRadius = (content: string) => {
 </script>
 
 <template>
-  <div class="flex flex-col h-[100vh] bg-white">
-    <header class="px-50 pt-7 py-4 flex items-center justify-between">
-      <RouterLink to="/" class="flex items-center gap-3">
-        <LogoText class="text-2xl font-semibold" />
+  <div class="flex flex-col h-screen bg-white">
+    <header
+      class="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between border-b border-gray-200 bg-white sticky top-0 z-10"
+    >
+      <RouterLink to="/" class="flex items-center gap-2 sm:gap-3">
+        <LogoText class="text-xl sm:text-2xl font-semibold" />
       </RouterLink>
-      <button @click="startNewChat" class="text-sm text-gray-500 hover:text-gray-700">
+      <button
+        @click="startNewChat"
+        class="text-xs sm:text-sm text-gray-500 hover:text-gray-700 px-2 sm:px-3 py-1 sm:py-2 rounded-md hover:bg-gray-100 transition"
+      >
         New Chat
       </button>
     </header>
 
     <div ref="messagesContainer" class="flex-1 overflow-y-auto">
-      <div v-for="message in chatStore.messages" :key="message.id" class="py-6">
-        <div class="max-w-4xl mx-auto px-6">
-          <div v-if="message.isUser" class="flex justify-end mb-4">
+      <div v-for="message in chatStore.messages" :key="message.id" class="py-4 sm:py-6">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6">
+          <div v-if="message.isUser" class="flex justify-end mb-4 sm:mb-6">
             <div
               :class="[
-                'max-w-[70%] bg-zinc-100 text-black px-5 py-3 message-bubble',
+                'max-w-[85%] sm:max-w-[75%] lg:max-w-[70%] bg-zinc-100 text-black px-3 sm:px-4 lg:px-5 py-2 sm:py-3 message-bubble shadow-sm',
                 getMessageBorderRadius(message.content),
               ]"
             >
-              <p class="text-sm md:text-base whitespace-pre-wrap break-words">
+              <p class="text-sm sm:text-base whitespace-pre-wrap break-words leading-relaxed">
                 {{ message.content }}
               </p>
             </div>
           </div>
 
-          <div v-else class="flex items-start gap-3">
+          <div v-else class="flex items-start gap-2 sm:gap-3 mb-4 sm:mb-6">
             <div class="flex-shrink-0">
-              <ResponseIcon class="h-6 w-6 text-gray-600 mt-1" />
+              <ResponseIcon class="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 mt-1" />
             </div>
             <div class="flex-1 min-w-0">
               <div
@@ -212,29 +217,34 @@ const getMessageBorderRadius = (content: string) => {
       </div>
     </div>
 
-    <div class="px-6 py-4">
+    <div class="px-4 sm:px-6 py-3 sm:py-4 bg-white border-t border-gray-200 sticky bottom-0">
       <div class="max-w-4xl mx-auto">
-        <div class="border rounded-xl overflow-hidden flex items-end shadow-sm bg-white">
+        <div
+          class="border border-gray-300 rounded-xl overflow-hidden flex items-end shadow-sm bg-white hover:shadow-md transition-shadow"
+        >
           <textarea
             v-model="inputMessage"
             @keydown="handleKeydown"
             :placeholder="chatStore.isLoading ? 'Doks AI is thinking...' : 'Message Doks AI...'"
             :disabled="chatStore.isLoading"
-            class="p-4 w-full text-lg resize-none focus:outline-none min-h-[60px] max-h-[200px] bg-white"
+            class="p-3 sm:p-4 w-full text-base sm:text-lg resize-none focus:outline-none min-h-[50px] sm:min-h-[60px] max-h-[150px] sm:max-h-[200px] bg-transparent"
             :class="{ 'opacity-50': chatStore.isLoading }"
             rows="1"
           ></textarea>
           <button
             @click="sendMessage"
             :disabled="!inputMessage.trim() || chatStore.isLoading"
-            class="border-l px-6 py-4 text-lg font-medium transition bg-white"
+            class="border-l border-gray-300 px-3 sm:px-6 py-3 sm:py-4 text-base sm:text-lg font-medium transition bg-white"
             :class="
               inputMessage.trim() && !chatStore.isLoading
                 ? 'hover:bg-blue-50 text-blue-600 cursor-pointer'
                 : 'text-gray-400 cursor-not-allowed'
             "
           >
-            {{ chatStore.isLoading ? 'Generating...' : 'Send' }}
+            <span class="hidden sm:inline">{{
+              chatStore.isLoading ? 'Generating...' : 'Send'
+            }}</span>
+            <span class="sm:hidden">{{ chatStore.isLoading ? '...' : '→' }}</span>
           </button>
         </div>
       </div>

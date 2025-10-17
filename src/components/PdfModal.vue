@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, defineEmits, computed } from 'vue'
 import FileIcon from '../assets/FileIcon.vue'
-import HealthCheck from './HealthCheck.vue'
 import { useDocumentStore } from '@/store/documents'
 
 const emit = defineEmits<{
@@ -13,6 +12,25 @@ const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement>()
 
 const documents = computed(() => documentStore.allDocuments)
+
+const formatFileSize = (size: string) => {
+  // If size is already formatted as a string, return as is
+  if (typeof size === 'string') return size
+
+  // Convert bytes to human readable format
+  const bytes = parseInt(size)
+  if (bytes === 0) return '0 Bytes'
+
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+const removeDocument = (id: string) => {
+  documentStore.removeDocument(id)
+}
 
 const closeModal = () => {
   emit('close')
@@ -52,75 +70,48 @@ const handleFiles = (files: File[]) => {
     documentStore.addDocument(file)
   })
 }
-
-const removePdf = (id: string) => {
-  documentStore.removeDocument(id)
-}
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'uploading':
-      return 'text-yellow-600'
-    case 'ready':
-      return 'text-green-600'
-    case 'error':
-      return 'text-red-600'
-    default:
-      return 'text-gray-600'
-  }
-}
-
-const getStatusText = (status: string) => {
-  switch (status) {
-    case 'uploading':
-      return 'Processing...'
-    case 'ready':
-      return 'Ready'
-    case 'error':
-      return 'Error'
-    default:
-      return 'Unknown'
-  }
-}
 </script>
 
 <template>
   <div
-    class="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50"
+    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     @click="closeModal"
   >
-    <div class="rounded-xl w-[800px] max-h-[80vh] overflow-hidden" @click.stop>
-      <div class="p-6 border-b">
+    <div
+      class="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl"
+      @click.stop
+    >
+      <div class="p-4 sm:p-6 border-b border-gray-200 bg-white">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <FileIcon class="h-6 w-6" />
-            <h2 class="text-xl font-semibold">Manage Documents</h2>
+          <div class="flex items-center gap-2 sm:gap-3">
+            <FileIcon class="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />
+            <h2 class="text-lg sm:text-xl font-semibold text-gray-900">Manage Documents</h2>
           </div>
-          <button @click="closeModal" class="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+          <button
+            @click="closeModal"
+            class="text-gray-400 hover:text-gray-600 text-xl sm:text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition"
+          >
+            ×
+          </button>
         </div>
       </div>
 
-      <div class="p-6">
-        <!-- Health Check Section -->
-        <div class="mb-6">
-          <HealthCheck />
-        </div>
-
+      <div class="p-4 sm:p-6 max-h-[70vh] overflow-y-auto">
         <div
           :class="[
-            'border-2 border-dashed rounded-xl p-8 text-center transition-colors',
+            'border-2 border-dashed rounded-xl p-6 sm:p-8 text-center transition-colors',
             isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400',
           ]"
           @dragover="handleDragOver"
           @dragleave="handleDragLeave"
           @drop="handleDrop"
         >
-          <FileIcon class="h-12 w-12 mx-auto mb-4 text-gray-400" />
-          <h3 class="text-lg font-medium mb-2">Drop PDF files here</h3>
-          <p class="text-gray-600 mb-4">or</p>
+          <FileIcon class="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-gray-400" />
+          <h3 class="text-base sm:text-lg font-medium mb-2">Drop PDF files here</h3>
+          <p class="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">or</p>
           <button
             @click="handleFileSelect"
-            class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+            class="bg-blue-500 text-white px-4 sm:px-6 py-2 text-sm sm:text-base rounded-lg hover:bg-blue-600 transition"
           >
             Browse Files
           </button>
@@ -134,61 +125,67 @@ const getStatusText = (status: string) => {
           />
         </div>
 
-        <div v-if="documents.length > 0" class="mt-6">
-          <h3 class="text-lg font-medium mb-4">Uploaded Documents ({{ documents.length }})</h3>
-          <div class="max-h-60 overflow-y-auto">
+        <div v-if="documents.length > 0" class="mt-4 sm:mt-6">
+          <h4 class="text-sm font-medium text-gray-900 mb-3">Uploaded Documents</h4>
+          <div class="space-y-2">
             <div
               v-for="doc in documents"
               :key="doc.id"
-              class="flex items-center justify-between p-3 border rounded-lg mb-2 hover:bg-gray-50"
+              class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg space-y-2 sm:space-y-0"
             >
-              <div class="flex items-center gap-3">
-                <FileIcon class="h-5 w-5 text-red-500" />
-                <div>
-                  <p class="font-medium">{{ doc.name }}</p>
-                  <p class="text-sm text-gray-600">
-                    {{ doc.size }} • {{ doc.uploadDate.toLocaleDateString() }}
-                    <span v-if="doc.totalChunks"> • {{ doc.totalChunks }} chunks</span>
-                  </p>
-                  <div v-if="doc.status === 'uploading'" class="mt-1">
-                    <div class="w-full bg-gray-200 rounded-full h-1.5">
-                      <div
-                        class="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                        :style="{ width: `${documentStore.getDocumentProgress(doc.id)}%` }"
-                      ></div>
-                    </div>
-                  </div>
-                  <p v-if="doc.errorMessage" class="text-xs text-red-500 mt-1">
-                    {{ doc.errorMessage }}
-                  </p>
+              <div class="flex items-center space-x-3 min-w-0 flex-1">
+                <FileIcon class="h-5 w-5 text-red-500 flex-shrink-0" />
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium truncate">{{ doc.name }}</p>
+                  <p class="text-xs text-gray-500">{{ formatFileSize(doc.size) }}</p>
                 </div>
               </div>
-              <div class="flex items-center gap-3">
-                <span :class="['text-sm font-medium', getStatusColor(doc.status)]">
-                  {{ getStatusText(doc.status) }}
+              <div class="flex items-center justify-between sm:justify-end space-x-2">
+                <span
+                  :class="[
+                    'px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap',
+                    doc.status === 'ready'
+                      ? 'bg-green-100 text-green-800'
+                      : doc.status === 'uploading'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-red-100 text-red-800',
+                  ]"
+                >
+                  {{ doc.status }}
                 </span>
                 <button
-                  @click="removePdf(doc.id)"
-                  class="text-gray-400 hover:text-red-500 transition"
+                  @click="removeDocument(doc.id)"
+                  class="text-red-500 hover:text-red-700 transition p-1"
                 >
-                  ×
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
                 </button>
               </div>
             </div>
           </div>
         </div>
-
-        <div v-else class="mt-6 text-center text-gray-500">
-          <p>No documents uploaded yet</p>
+        <div v-else class="mt-4 sm:mt-6 text-center text-gray-500">
+          <p class="text-sm sm:text-base">No documents uploaded yet</p>
         </div>
       </div>
 
-      <div class="p-6 border-t bg-gray-50 flex justify-end gap-3">
-        <button @click="closeModal" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition">
+      <div
+        class="p-4 sm:p-6 border-t bg-gray-50 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3"
+      >
+        <button
+          @click="closeModal"
+          class="px-4 py-2 text-sm sm:text-base text-gray-600 hover:text-gray-800 transition order-2 sm:order-1"
+        >
           Cancel
         </button>
         <button
-          class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+          class="px-4 sm:px-6 py-2 text-sm sm:text-base bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition order-1 sm:order-2"
           :disabled="documents.length === 0"
           :class="{ 'opacity-50 cursor-not-allowed': documents.length === 0 }"
           @click="closeModal"
