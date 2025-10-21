@@ -85,6 +85,28 @@ class RagPipelineAPI {
     this.baseUrl = baseUrl
   }
 
+  // Helper method to handle API failures and notify the status store
+  private handleApiError(error: unknown, endpoint: string) {
+    console.error(`${endpoint} API error:`, error)
+
+    // Import the store dynamically to avoid circular dependencies
+    import('@/store/apiStatus')
+      .then(({ useApiStatusStore }) => {
+        const apiStatusStore = useApiStatusStore()
+        apiStatusStore.markApiError()
+      })
+      .catch(() => {
+        // Fallback if store import fails
+        console.warn('Could not update API status store')
+      })
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Network error',
+      code: 'NETWORK_ERROR',
+    }
+  }
+
   async ingestDocument(request: IngestRequest): Promise<IngestResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/ingest`, {
@@ -98,18 +120,13 @@ class RagPipelineAPI {
       const data = await response.json()
       return data
     } catch (error) {
-      console.error('Ingest API error:', error)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Network error',
-        code: 'NETWORK_ERROR',
-      }
+      return this.handleApiError(error, 'Ingest') as IngestResponse
     }
   }
 
   async queryDocuments(request: QueryRequest): Promise<QueryResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/query`, {
+      const response = await fetch(`${this.baseUrl}/query/enhanced`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,12 +137,7 @@ class RagPipelineAPI {
       const data = await response.json()
       return data
     } catch (error) {
-      console.error('Query API error:', error)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Network error',
-        code: 'NETWORK_ERROR',
-      }
+      return this.handleApiError(error, 'Query') as QueryResponse
     }
   }
 
@@ -146,6 +158,16 @@ class RagPipelineAPI {
       const data = await response.json()
       return data
     } catch (error) {
+      // Import the store dynamically to handle the error
+      import('@/store/apiStatus')
+        .then(({ useApiStatusStore }) => {
+          const apiStatusStore = useApiStatusStore()
+          apiStatusStore.markApiError()
+        })
+        .catch(() => {
+          console.warn('Could not update API status store')
+        })
+
       console.error('Stats API error:', error)
       throw error
     }

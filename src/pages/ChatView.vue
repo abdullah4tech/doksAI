@@ -41,13 +41,10 @@ const generateInitialResponse = async (userInput: string) => {
 
     // Import API functions directly
     const { ragAPI } = await import('@/services/api')
-    const config = await import('@/config')
 
     // Prepare query request
     const queryRequest = {
-      question: userInput,
-      top_k: config.default.DEFAULT_TOP_K,
-      min_score: config.default.DEFAULT_MIN_SCORE,
+      question: userInput
     }
 
     // Query the RAG API
@@ -131,7 +128,7 @@ const getMessageBorderRadius = (content: string) => {
 <template>
   <div class="flex flex-col h-screen bg-white">
     <header
-      class="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between border-b border-gray-200 bg-white sticky top-0 z-10"
+      class="px-4 sm:px-6 lg:px-8 py-3 pt-10 sm:py-4 flex items-center justify-around gap-[900px] bg-white sticky top-0 z-10"
     >
       <RouterLink to="/" class="flex items-center gap-2 sm:gap-3">
         <LogoText class="text-xl sm:text-2xl font-semibold" />
@@ -217,7 +214,7 @@ const getMessageBorderRadius = (content: string) => {
       </div>
     </div>
 
-    <div class="px-4 sm:px-6 py-3 sm:py-4 bg-white border-t border-gray-200 sticky bottom-0">
+    <div class="px-4 sm:px-6 py-3 sm:py-4 bg-white sticky bottom-0">
       <div class="max-w-4xl mx-auto">
         <div
           class="border border-gray-300 rounded-xl overflow-hidden flex items-end shadow-sm bg-white hover:shadow-md transition-shadow"
