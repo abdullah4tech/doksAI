@@ -28,9 +28,8 @@ export interface Document {
 }
 
 export interface QuerySource {
+  text: string
   doc_id: string
   page: number
-  chunk_id: string
-  text: string
   score: number
 }

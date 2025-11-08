@@ -1,7 +1,30 @@
-// RAG Pipeline API Service
+// RAG Pipeline API Service - V2 API (snake_case naming)
+
+// Chunk strategies supported by the server
+export type ChunkStrategy =
+  | 'auto'
+  | 'recursive'
+  | 'semantic'
+  | 'precise'
+  | 'token-based'
+  | 'contextual'
+  | 'hierarchical'
+  | 'markdown'
+
+// Retrieval strategies supported by the server
+export type RetrievalStrategy =
+  | 'auto'
+  | 'similarity'
+  | 'mmr'
+  | 'ensemble'
+  | 'rerank'
+  | 'contextual'
+  | 'hybrid'
+
 export interface IngestRequest {
-  doc_id: string
-  pdf_base64: string
+  doc_id: string // required, 1-255 chars
+  pdf_base64: string // required, base64 encoded PDF
+  chunkStrategy?: ChunkStrategy
   overwrite?: boolean
   chunk_size?: number
   chunk_overlap?: number
@@ -14,22 +37,28 @@ export interface IngestResponse {
   total_chunks?: number
   total_pages?: number
   processing_time_ms?: number
+  strategy?: {
+    used: string
+    reason: string
+  }
   error?: string
   code?: string
 }
 
 export interface QueryRequest {
-  question: string
+  question: string // required, 1-1000 chars
+  conversationId?: string // optional, UUID for conversation context
+  retrievalStrategy?: RetrievalStrategy
   top_k?: number
-  doc_id?: string
   min_score?: number
+  mmr_lambda?: number
+  doc_id?: string // optional, filter by specific document
 }
 
 export interface QuerySource {
+  text: string
   doc_id: string
   page: number
-  chunk_id: string
-  text: string
   score: number
 }
 
@@ -40,8 +69,18 @@ export interface QueryResponse {
     sources: QuerySource[]
     confidence: number
   }
-  query_time_ms?: number
-  total_results?: number
+  conversationId?: string
+  turnId?: number
+  usedMemory?: boolean
+  strategy?: {
+    retrieval: string
+    reasoning: string
+  }
+  metadata?: {
+    queryTime: number
+    resultsCount: number
+    cacheHitRate: number
+  }
   error?: string
   code?: string
 }
@@ -80,9 +119,28 @@ import config from '@/config'
 
 class RagPipelineAPI {
   private baseUrl: string
+  private endpoints: typeof config.API_ENDPOINTS
+  private timeout: number
 
   constructor(baseUrl: string = config.API_BASE_URL) {
     this.baseUrl = baseUrl
+    this.endpoints = config.API_ENDPOINTS
+    this.timeout = config.API_TIMEOUT
+  }
+
+  // Helper: fetch with timeout using AbortController
+  private async fetchWithTimeout(input: RequestInfo, init?: RequestInit) {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout)
+    try {
+      const options = Object.assign({}, init || {}, { signal: controller.signal })
+      const res = await fetch(input, options)
+      clearTimeout(timeoutId)
+      return res
+    } catch (err) {
+      clearTimeout(timeoutId)
+      throw err
+    }
   }
 
   // Helper method to handle API failures and notify the status store
@@ -109,7 +167,8 @@ class RagPipelineAPI {
 
   async ingestDocument(request: IngestRequest): Promise<IngestResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/ingest`, {
+      const url = `${this.baseUrl}${this.endpoints.ingest}`
+      const response = await this.fetchWithTimeout(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +185,8 @@ class RagPipelineAPI {
 
   async queryDocuments(request: QueryRequest): Promise<QueryResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/query/enhanced`, {
+      const url = `${this.baseUrl}${this.endpoints.query}`
+      const response = await this.fetchWithTimeout(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -143,7 +203,8 @@ class RagPipelineAPI {
 
   async getHealth(): Promise<HealthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/health`)
+      const url = `${this.baseUrl}${this.endpoints.health}`
+      const response = await this.fetchWithTimeout(url)
       const data = await response.json()
       return data
     } catch (error) {
@@ -154,7 +215,9 @@ class RagPipelineAPI {
 
   async getStats(): Promise<StatsResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/query/stats`)
+      // Use cache endpoint stats if available
+      const url = `${this.baseUrl}${this.endpoints.cache}/stats`
+      const response = await this.fetchWithTimeout(url)
       const data = await response.json()
       return data
     } catch (error) {
