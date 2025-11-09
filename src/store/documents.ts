@@ -4,6 +4,7 @@ import type { Document } from './types'
 import { ragAPI, type IngestRequest } from '@/services/api'
 import RagPipelineAPI from '@/services/api'
 import config from '@/config'
+import { useToastStore } from './toast'
 
 export const useDocumentStore = defineStore('document', () => {
   const documents = ref<Record<string, Document>>({})
@@ -83,6 +84,10 @@ export const useDocumentStore = defineStore('document', () => {
           processingTime: response.processing_time_ms,
         })
         uploadProgress.value[docId] = 100
+
+        // Show success toast with 12 second duration
+        const toastStore = useToastStore()
+        toastStore.success('PDF uploaded successfully', `${file.name} is ready to use`, 12000)
       } else {
         throw new Error(response.error || 'Upload failed')
       }
