@@ -17,6 +17,16 @@ export const useApiStatusStore = defineStore('apiStatus', () => {
   const checkCount = ref(0)
 
   let healthCheckInterval: number | null = null
+  let currentInterval = 30000 // Start with 30 seconds
+  let failureCount = 0
+
+  // Smart intervals based on status
+  const INTERVALS = {
+    HEALTHY: 30000, // 30 seconds when healthy
+    RECOVERING: 15000, // 15 seconds when recovering from failure
+    FAILED: 60000, // 1 minute when failed
+    MAX_BACKOFF: 300000, // Max 5 minutes
+  }
 
   // Getters
   const status = computed(
@@ -57,9 +67,31 @@ export const useApiStatusStore = defineStore('apiStatus', () => {
 
         // Log status changes
         console.log(`API Status changed: ${newStatus ? 'Online' : 'Offline'}`)
+
+        // Adjust monitoring interval based on status change
+        if (newStatus) {
+          // API recovered - reset failure count
+          failureCount = 0
+          currentInterval = INTERVALS.HEALTHY
+        } else {
+          // API went down - use recovering interval initially
+          failureCount++
+          currentInterval = INTERVALS.RECOVERING
+        }
+
+        // Restart monitoring with new interval
+        if (healthCheckInterval) {
+          restartMonitoring()
+        }
+      } else {
+        // Status unchanged - just update timestamp
+        lastChecked.value = new Date()
       }
     } catch (error) {
       const newStatus = false
+
+      // Check if it's a network error (user is offline)
+      const isNetworkError = error instanceof TypeError && error.message.includes('Failed to fetch')
 
       // Only update if status actually changed or it's the first check
       if (isHealthy.value !== newStatus || isHealthy.value === null) {
@@ -67,7 +99,25 @@ export const useApiStatusStore = defineStore('apiStatus', () => {
         lastChecked.value = new Date()
         checkCount.value++
 
-        console.warn('API health check failed:', error)
+        if (isNetworkError) {
+          console.warn('API health check failed: Network error (user may be offline)')
+        } else {
+          console.warn('API health check failed:', error)
+        }
+
+        // Increase failure count and apply exponential backoff
+        failureCount++
+        currentInterval = Math.min(
+          INTERVALS.FAILED * Math.pow(1.5, failureCount - 1),
+          INTERVALS.MAX_BACKOFF,
+        )
+
+        // Restart monitoring with backoff interval
+        if (healthCheckInterval) {
+          restartMonitoring()
+        }
+      } else {
+        lastChecked.value = new Date()
       }
     } finally {
       isLoading.value = false
@@ -84,16 +134,46 @@ export const useApiStatusStore = defineStore('apiStatus', () => {
     }
   }
 
-  const startMonitoring = (intervalMs = 3000) => {
+  const startMonitoring = () => {
     if (healthCheckInterval) {
       clearInterval(healthCheckInterval)
     }
 
+    // Reset to healthy interval on start
+    currentInterval = INTERVALS.HEALTHY
+    failureCount = 0
+
     // Initial check
     checkHealth()
 
-    // Set up periodic monitoring
-    healthCheckInterval = setInterval(() => checkHealth(), intervalMs)
+    // Set up periodic monitoring with current interval
+    healthCheckInterval = setInterval(() => checkHealth(), currentInterval)
+
+    // Pause monitoring when tab is inactive to save resources
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+  }
+
+  const restartMonitoring = () => {
+    if (healthCheckInterval) {
+      clearInterval(healthCheckInterval)
+      healthCheckInterval = setInterval(() => checkHealth(), currentInterval)
+    }
+  }
+
+  const handleVisibilityChange = () => {
+    if (document.hidden) {
+      // Tab inactive - stop monitoring to save resources
+      if (healthCheckInterval) {
+        clearInterval(healthCheckInterval)
+        healthCheckInterval = null
+      }
+    } else {
+      // Tab active again - check immediately and resume monitoring
+      if (!healthCheckInterval) {
+        checkHealth()
+        healthCheckInterval = setInterval(() => checkHealth(), currentInterval)
+      }
+    }
   }
 
   const stopMonitoring = () => {
@@ -101,6 +181,7 @@ export const useApiStatusStore = defineStore('apiStatus', () => {
       clearInterval(healthCheckInterval)
       healthCheckInterval = null
     }
+    document.removeEventListener('visibilitychange', handleVisibilityChange)
   }
 
   const reset = () => {
@@ -108,6 +189,8 @@ export const useApiStatusStore = defineStore('apiStatus', () => {
     isLoading.value = true
     lastChecked.value = null
     checkCount.value = 0
+    failureCount = 0
+    currentInterval = INTERVALS.HEALTHY
     stopMonitoring()
   }
 
