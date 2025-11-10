@@ -157,7 +157,7 @@ const getMessageBorderRadius = (content: string) => {
 <template>
   <div class="flex flex-col h-screen bg-white">
     <header
-      class="px-4 sm:px-6 lg:px-8 py-3 pt-10 sm:py-4 flex items-center justify-around gap-[900px] bg-white sticky top-0 z-10"
+      class="px-4 sm:px-6 lg:px-8 py-3 pt-10 sm:py-4 flex items-center justify-between bg-white sticky top-0 z-10"
     >
       <RouterLink to="/" class="flex items-center gap-2 sm:gap-3">
         <LogoText class="text-xl sm:text-2xl font-semibold" />
