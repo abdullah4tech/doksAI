@@ -5,8 +5,8 @@ import { useApiStatusStore } from '@/store/apiStatus'
 const apiStatusStore = useApiStatusStore()
 
 onMounted(() => {
-  // Start monitoring when component mounts
-  apiStatusStore.startMonitoring(3000)
+  // Start smart monitoring with adaptive intervals
+  apiStatusStore.startMonitoring()
 })
 
 onUnmounted(() => {
@@ -37,7 +37,18 @@ const getTimeSinceLastCheck = () => {
 
 <template>
   <div
-    class="flex items-center gap-2 group cursor-pointer transition-all duration-200 hover:bg-gray-50 px-2 py-1 rounded-md"
+    v-motion
+    :initial="{ opacity: 0, scale: 0.8 }"
+    :enter="{
+      opacity: 1,
+      scale: 1,
+      transition: {
+        type: 'spring',
+        stiffness: 200,
+        damping: 15,
+      },
+    }"
+    class="flex items-center gap-2 group cursor-pointer transition-all duration-200 hover:bg-gray-50 px-2 py-1 rounded-md hover:scale-105"
     @click="handleClick"
     :title="`Last checked: ${apiStatusStore.lastChecked ? new Date(apiStatusStore.lastChecked).toLocaleTimeString() : 'Never'} | Checks: ${apiStatusStore.checkCount}`"
   >

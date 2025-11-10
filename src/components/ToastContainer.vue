@@ -18,7 +18,27 @@ const handleClose = (id: string) => {
         <div
           v-for="toast in toastStore.toasts"
           :key="toast.id"
-          class="pointer-events-auto animate-slide-in"
+          v-motion
+          :initial="{ opacity: 0, x: 100, scale: 0.8 }"
+          :enter="{
+            opacity: 1,
+            x: 0,
+            scale: 1,
+            transition: {
+              type: 'spring',
+              stiffness: 200,
+              damping: 20,
+            },
+          }"
+          :leave="{
+            opacity: 0,
+            x: 100,
+            scale: 0.8,
+            transition: {
+              duration: 200,
+            },
+          }"
+          class="pointer-events-auto"
         >
           <Toast :toast="toast" @close="handleClose(toast.id)" />
         </div>
