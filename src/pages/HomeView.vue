@@ -86,6 +86,27 @@ const closePdfModal = () => {
       </div>
     </div>
 
-    <PdfModal v-if="showPdfModal" @close="closePdfModal" />
+    <Transition name="modal">
+      <PdfModal v-if="showPdfModal" @close="closePdfModal" />
+    </Transition>
   </div>
 </template>
+
+<style scoped>
+/* Modal entrance/exit animations */
+.modal-enter-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-leave-active {
+  transition: all 0.2s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.modal-enter-from {
+  opacity: 0;
+}
+
+.modal-leave-to {
+  opacity: 0;
+}
+</style>
