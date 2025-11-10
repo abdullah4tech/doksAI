@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import LogoText from '@/components/LogoText.vue'
 import ResponseIcon from '@/assets/ResponseIcon.vue'
@@ -24,6 +24,29 @@ onMounted(async () => {
   }
 })
 
+// Watch for message changes and auto-scroll during streaming
+watch(
+  () => chatStore.messages,
+  async () => {
+    // Check if any message is currently streaming
+    const isStreaming = chatStore.messages.some((msg) => msg.isStreaming)
+    if (isStreaming) {
+      await nextTick()
+      scrollToBottom('smooth')
+    }
+  },
+  { deep: true },
+)
+
+// Watch for new messages being added
+watch(
+  () => chatStore.messages.length,
+  async () => {
+    await nextTick()
+    scrollToBottom('smooth')
+  },
+)
+
 const generateInitialResponse = async (userInput: string) => {
   // Don't use queryRAG here because it adds the user message again
   // The user message was already added when creating the session
@@ -44,7 +67,7 @@ const generateInitialResponse = async (userInput: string) => {
 
     // Prepare query request
     const queryRequest = {
-      question: userInput
+      question: userInput,
     }
 
     // Query the RAG API
@@ -90,13 +113,19 @@ const sendMessage = async () => {
   const currentInput = inputMessage.value
   inputMessage.value = ''
 
+  // Scroll immediately when user message is added
+  await nextTick()
+  scrollToBottom('smooth')
+
   await chatStore.queryRAG(sessionId, currentInput)
-  scrollToBottom()
 }
 
-const scrollToBottom = () => {
+const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
   if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    messagesContainer.value.scrollTo({
+      top: messagesContainer.value.scrollHeight,
+      behavior: behavior,
+    })
   }
 }
 
@@ -144,7 +173,22 @@ const getMessageBorderRadius = (content: string) => {
     <div ref="messagesContainer" class="flex-1 overflow-y-auto">
       <div v-for="message in chatStore.messages" :key="message.id" class="py-4 sm:py-6">
         <div class="max-w-4xl mx-auto px-4 sm:px-6">
-          <div v-if="message.isUser" class="flex justify-end mb-4 sm:mb-6">
+          <div
+            v-if="message.isUser"
+            v-motion
+            :initial="{ opacity: 0, x: 50, scale: 0.9 }"
+            :enter="{
+              opacity: 1,
+              x: 0,
+              scale: 1,
+              transition: {
+                type: 'spring',
+                stiffness: 150,
+                damping: 15,
+              },
+            }"
+            class="flex justify-end mb-4 sm:mb-6"
+          >
             <div
               :class="[
                 'max-w-[85%] sm:max-w-[75%] lg:max-w-[70%] bg-zinc-100 text-black px-3 sm:px-4 lg:px-5 py-2 sm:py-3 message-bubble shadow-sm',
@@ -157,7 +201,22 @@ const getMessageBorderRadius = (content: string) => {
             </div>
           </div>
 
-          <div v-else class="flex items-start gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <div
+            v-else
+            v-motion
+            :initial="{ opacity: 0, x: -50, scale: 0.9 }"
+            :enter="{
+              opacity: 1,
+              x: 0,
+              scale: 1,
+              transition: {
+                type: 'spring',
+                stiffness: 150,
+                damping: 15,
+              },
+            }"
+            class="flex items-start gap-2 sm:gap-3 mb-4 sm:mb-6"
+          >
             <div class="flex-shrink-0">
               <ResponseIcon class="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 mt-1" />
             </div>
@@ -198,15 +257,6 @@ const getMessageBorderRadius = (content: string) => {
 
               <div class="flex items-center gap-3 text-xs text-gray-500 mt-2">
                 <span>{{ message.timestamp.toLocaleTimeString() }}</span>
-                <span
-                  v-if="message.confidence && !message.isStreaming"
-                  class="flex items-center gap-1"
-                >
-                  <span>Confidence:</span>
-                  <span class="px-1.5 py-0.5 bg-green-100 text-green-700 rounded">
-                    {{ Math.round(message.confidence * 100) }}%
-                  </span>
-                </span>
               </div>
             </div>
           </div>
