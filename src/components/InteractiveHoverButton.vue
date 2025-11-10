@@ -1,6 +1,6 @@
 <template>
   <button
-    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-black rounded-full border border-gray-800 transition-all duration-200 hover:bg-gray-900"
+    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700  rounded-full border border-gray-300 transition-all duration-200"
     @click="handleClick"
     :title="`Last checked: ${apiStatusStore.lastChecked ? new Date(apiStatusStore.lastChecked).toLocaleTimeString() : 'Never'}`"
   >
