@@ -130,7 +130,7 @@ onMounted(() => {
       :width="30"
       :height="30"
       :squares="[60, 60]"
-      squares-class-name="hover:fill-blue-500"
+      squares-class-name="hover:fill-sky-300"
     />
 
     <!-- API Status Indicator - bottom left with animation -->
