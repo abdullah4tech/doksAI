@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useDocumentStore } from '@/store/documents'
 
 const emit = defineEmits<{
@@ -14,6 +14,36 @@ const fileInput = ref<HTMLInputElement>()
 const uploadingDocuments = computed(() =>
   documentStore.allDocuments.filter((doc) => doc.status === 'uploading'),
 )
+
+// Watch for upload completion and auto-close modal
+watch(
+  () => uploadingDocuments.value.length,
+  (newCount, oldCount) => {
+    // If we had uploading documents and now we don't, close the modal
+    if (oldCount > 0 && newCount === 0) {
+      // Small delay to let user see the progress complete
+      setTimeout(() => {
+        closeModal()
+      }, 500)
+    }
+  },
+)
+
+// Handle Escape key to close modal
+const handleKeyDown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    closeModal()
+  }
+}
+
+// Add/remove event listener on mount/unmount
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
+})
 
 const removeDocument = (id: string) => {
   documentStore.removeDocument(id)
@@ -61,10 +91,10 @@ const handleFiles = (files: File[]) => {
 
 <template>
   <div
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    class="modal-backdrop fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     @click="closeModal"
   >
-    <div class="bg-white rounded-2xl w-full max-w-md shadow-xl" @click.stop>
+    <div class="modal-content bg-white rounded-2xl w-full max-w-md shadow-2xl" @click.stop>
       <!-- Main Drop Area -->
       <div class="p-8">
         <div
@@ -145,3 +175,39 @@ const handleFiles = (files: File[]) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Professional modal animations */
+.modal-backdrop {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-content {
+  animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Drag and drop hover effects */
+.border-dashed {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+</style>
