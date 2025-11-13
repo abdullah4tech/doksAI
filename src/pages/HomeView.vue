@@ -157,10 +157,16 @@ onMounted(() => {
     <!-- Main content container -->
     <div class="flex flex-col items-center w-full max-w-4xl mx-auto z-10">
       <!-- Logo with ref for GSAP -->
-      <div ref="logoRef">
+      <div ref="logoRef" class="relative">
         <LogoText
           class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl mb-8 sm:mb-12 lg:mb-16 text-center"
         />
+        <!-- Experimental Version Badge -->
+        <div
+          class="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 bg-gradient-to-r from-orange-400 to-pink-500 text-white text-[10px] sm:text-sm font-bold px-1.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md sm:shadow-lg transform rotate-12 hover:rotate-0 transition-transform duration-300 animate-pulse"
+        >
+          v0.1.0-beta
+        </div>
       </div>
 
       <!-- Input container with Motion -->
