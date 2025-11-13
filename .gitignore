@@ -28,3 +28,10 @@ coverage
 
 *.tsbuildinfo
 .env
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Vitest
+.vitest/
