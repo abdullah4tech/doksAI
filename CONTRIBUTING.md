@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to DoksAI! This document provides guidelines and instructions for contributing to the project.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
@@ -15,7 +15,7 @@ Thank you for your interest in contributing to DoksAI! This document provides gu
 - [Project Roadmap](#project-roadmap)
 - [Getting Help](#getting-help)
 
-## 🤝 Code of Conduct
+## Code of Conduct
 
 By participating in this project, you agree to maintain a respectful and inclusive environment for everyone.
 
@@ -26,7 +26,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
 - Focus on what's best for the community
 - Show empathy towards other community members
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -74,7 +74,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
    bun run dev
    ```
 
-## 🔄 Development Workflow
+## Development Workflow
 
 ### 1. Sync with Upstream
 
@@ -127,7 +127,7 @@ git push origin feature/v0.2.0-conversation-sidebar
 - Fill out the PR template
 - Request review
 
-## 🌳 Branch Naming Convention
+## Branch Naming Convention
 
 We use a structured branch naming convention to keep the repository organized.
 
@@ -161,7 +161,7 @@ infra/ci-cd-pipeline
 refactor/optimize-chat-store
 ```
 
-## 💬 Commit Message Guidelines
+## Commit Message Guidelines
 
 We follow [Conventional Commits](https://www.conventionalcommits.org/) specification.
 
@@ -244,7 +244,7 @@ chore(config): update vite configuration
 - Limit first line to 72 characters
 - Reference issues when applicable (#123)
 
-## 🔀 Pull Request Process
+## Pull Request Process
 
 ### Before Creating a PR
 
@@ -305,7 +305,7 @@ Add screenshots or GIFs
 4. **Approval** - Once approved, the PR can be merged
 5. **Merge** - Maintainer merges using squash or merge commit
 
-## 🎨 Coding Standards
+## Coding Standards
 
 ### TypeScript
 
@@ -407,7 +407,7 @@ src/
 - **Interfaces/Types**: PascalCase (`interface User {}`)
 - **Store**: camelCase with 'use' prefix (`useUserStore`)
 
-## 🧪 Testing Guidelines
+## Testing Guidelines
 
 ### Writing Tests
 
@@ -459,7 +459,7 @@ bun run test:coverage
 bun run test:ui
 ```
 
-## 🗺️ Project Roadmap
+## Project Roadmap
 
 We follow a versioned release strategy. Contributions should align with the current version in development.
 
@@ -467,14 +467,14 @@ We follow a versioned release strategy. Contributions should align with the curr
 
 ### Upcoming Versions
 
-| Version    | Focus                   | Status     |
-| ---------- | ----------------------- | ---------- |
-| **v0.2.0** | Conversation Management | 🔜 Next    |
-| **v0.3.0** | Bookmarks & Labels      | 📋 Planned |
-| **v0.4.0** | Advanced Interaction    | 📋 Planned |
-| **v0.5.0** | Document Intelligence   | 📋 Planned |
-| **v0.6.0** | Smart Suggestions       | 📋 Planned |
-| **v1.0.0** | Production Release      | 🎯 Goal    |
+| Version    | Focus                   | Status   |
+| ---------- | ----------------------- | -------- |
+| **v0.2.0** | Conversation Management | Next     |
+| **v0.3.0** | Bookmarks & Labels      | Planned  |
+| **v0.4.0** | Advanced Interaction    | Planned  |
+| **v0.5.0** | Document Intelligence   | Planned  |
+| **v0.6.0** | Smart Suggestions       | Planned  |
+| **v1.0.0** | Production Release      | Goal     |
 
 See [ROADMAP.md](./ROADMAP.md) for detailed feature descriptions.
 
@@ -488,13 +488,13 @@ See [ROADMAP.md](./ROADMAP.md) for detailed feature descriptions.
 3. Comment on the issue to claim it
 4. Follow the issue template guidelines
 
-## 💡 Getting Help
+## Getting Help
 
 ### Questions?
 
-- 💬 [GitHub Discussions](https://github.com/abdullah4tech/doksAI/discussions) - Ask questions
-- 📝 [Documentation](./README.md) - Read the docs
-- 🐛 [Issues](https://github.com/abdullah4tech/doksAI/issues) - Report bugs
+- [GitHub Discussions](https://github.com/abdullah4tech/doksAI/discussions) - Ask questions
+- [Documentation](./README.md) - Read the docs
+- [Issues](https://github.com/abdullah4tech/doksAI/issues) - Report bugs
 
 ### Communication
 
@@ -503,7 +503,7 @@ See [ROADMAP.md](./ROADMAP.md) for detailed feature descriptions.
 - Be patient and respectful
 - Search existing issues/discussions first
 
-## 📝 Documentation
+## Documentation
 
 When adding features, please update:
 
@@ -513,7 +513,7 @@ When adding features, please update:
 - Type definitions - Keep types up to date
 - Tests - Document test scenarios
 
-## 🎉 Recognition
+## Recognition
 
 Contributors will be:
 
@@ -521,12 +521,12 @@ Contributors will be:
 - Mentioned in release notes
 - Celebrated in project discussions
 
-## 📜 License
+## License
 
 By contributing, you agree that your contributions will be licensed under the same license as the project (check LICENSE file).
 
 ---
 
-Thank you for contributing to DoksAI! Your efforts help make this project better for everyone. 🚀
+Thank you for contributing to DoksAI! Your efforts help make this project better for everyone.
 
 **Questions?** Open a [discussion](https://github.com/abdullah4tech/doksAI/discussions) or reach out to the maintainers.
