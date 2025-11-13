@@ -38,27 +38,32 @@ By participating in this project, you agree to maintain a respectful and inclusi
 ### Installation
 
 1. **Fork the repository**
+
    ```bash
    # Click the "Fork" button on GitHub
    ```
 
 2. **Clone your fork**
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/doksAI.git
    cd doksAI
    ```
 
 3. **Add upstream remote**
+
    ```bash
    git remote add upstream https://github.com/abdullah4tech/doksAI.git
    ```
 
 4. **Install dependencies**
+
    ```bash
    bun install
    ```
 
 5. **Set up environment variables**
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
@@ -264,21 +269,26 @@ chore(config): update vite configuration
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Related Issue
+
 Closes #123
 
 ## Type of Change
+
 - [ ] Bug fix (non-breaking change)
 - [ ] New feature (non-breaking change)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation update
 
 ## Screenshots (if applicable)
+
 Add screenshots or GIFs
 
 ## Checklist
+
 - [ ] My code follows the project's style guidelines
 - [ ] I have performed a self-review of my code
 - [ ] I have commented my code, particularly in hard-to-understand areas
@@ -360,9 +370,7 @@ onMounted(() => {
 <template>
   <!-- Mobile-first responsive -->
   <div class="p-4 sm:p-6 lg:p-8">
-    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
-      Title
-    </h1>
+    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">Title</h1>
   </div>
 </template>
 
@@ -418,10 +426,10 @@ describe('Component/Feature Name', () => {
   it('should describe what the test does', () => {
     // Arrange
     const input = 'test'
-    
+
     // Act
     const result = functionUnderTest(input)
-    
+
     // Assert
     expect(result).toBe('expected')
   })
@@ -461,14 +469,14 @@ We follow a versioned release strategy. Contributions should align with the curr
 
 ### Upcoming Versions
 
-| Version | Focus | Status |
-|---------|-------|--------|
-| **v0.2.0** | Conversation Management | 🔜 Next |
-| **v0.3.0** | Bookmarks & Labels | 📋 Planned |
-| **v0.4.0** | Advanced Interaction | 📋 Planned |
-| **v0.5.0** | Document Intelligence | 📋 Planned |
-| **v0.6.0** | Smart Suggestions | 📋 Planned |
-| **v1.0.0** | Production Release | 🎯 Goal |
+| Version    | Focus                   | Status     |
+| ---------- | ----------------------- | ---------- |
+| **v0.2.0** | Conversation Management | 🔜 Next    |
+| **v0.3.0** | Bookmarks & Labels      | 📋 Planned |
+| **v0.4.0** | Advanced Interaction    | 📋 Planned |
+| **v0.5.0** | Document Intelligence   | 📋 Planned |
+| **v0.6.0** | Smart Suggestions       | 📋 Planned |
+| **v1.0.0** | Production Release      | 🎯 Goal    |
 
 See [ROADMAP.md](./ROADMAP.md) for detailed feature descriptions.
 
