@@ -70,6 +70,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
    ```
 
 6. **Start development server**
+
    ```bash
    bun run dev
    ```
@@ -467,14 +468,14 @@ We follow a versioned release strategy. Contributions should align with the curr
 
 ### Upcoming Versions
 
-| Version    | Focus                   | Status   |
-| ---------- | ----------------------- | -------- |
-| **v0.2.0** | Conversation Management | Next     |
-| **v0.3.0** | Bookmarks & Labels      | Planned  |
-| **v0.4.0** | Advanced Interaction    | Planned  |
-| **v0.5.0** | Document Intelligence   | Planned  |
-| **v0.6.0** | Smart Suggestions       | Planned  |
-| **v1.0.0** | Production Release      | Goal     |
+| Version    | Focus                   | Status  |
+| ---------- | ----------------------- | ------- |
+| **v0.2.0** | Conversation Management | Next    |
+| **v0.3.0** | Bookmarks & Labels      | Planned |
+| **v0.4.0** | Advanced Interaction    | Planned |
+| **v0.5.0** | Document Intelligence   | Planned |
+| **v0.6.0** | Smart Suggestions       | Planned |
+| **v1.0.0** | Production Release      | Goal    |
 
 See [ROADMAP.md](./ROADMAP.md) for detailed feature descriptions.
 
