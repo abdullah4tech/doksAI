@@ -16,11 +16,13 @@ export const useAuthStore = defineStore('auth', () => {
   // Load token and user from localStorage if available
   const savedToken = localStorage.getItem('auth_token')
   const savedUser = localStorage.getItem('auth_user')
+  const savedOnboarding = localStorage.getItem('onboarding_completed')
 
   const token = ref<string | null>(savedToken || null)
   const user = ref<User | null>(savedUser ? JSON.parse(savedUser) : null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const onboardingCompleted = ref<boolean>(savedOnboarding === 'true')
 
   const isAuthenticated = computed(() => !!token.value && !!user.value)
 
@@ -48,15 +50,28 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
   }
 
+  const completeOnboarding = () => {
+    onboardingCompleted.value = true
+    localStorage.setItem('onboarding_completed', 'true')
+  }
+
+  const resetOnboarding = () => {
+    onboardingCompleted.value = false
+    localStorage.removeItem('onboarding_completed')
+  }
+
   return {
     token,
     user,
     isLoading,
     error,
+    onboardingCompleted,
     isAuthenticated,
     setAuth,
     clearAuth,
     setError,
     clearError,
+    completeOnboarding,
+    resetOnboarding,
   }
 })
