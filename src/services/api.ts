@@ -128,6 +128,12 @@ class RagPipelineAPI {
     this.timeout = config.API_TIMEOUT
   }
 
+  // Helper: get authorization header
+  private getAuthHeader(): HeadersInit {
+    const token = localStorage.getItem('auth_token')
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  }
+
   // Helper: fetch with timeout using AbortController
   private async fetchWithTimeout(input: RequestInfo, init?: RequestInit) {
     const controller = new AbortController()
@@ -172,6 +178,7 @@ class RagPipelineAPI {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...this.getAuthHeader(),
         },
         body: JSON.stringify(request),
       })
@@ -190,6 +197,7 @@ class RagPipelineAPI {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...this.getAuthHeader(),
         },
         body: JSON.stringify(request),
       })
@@ -204,7 +212,9 @@ class RagPipelineAPI {
   async getHealth(): Promise<HealthResponse> {
     try {
       const url = `${this.baseUrl}${this.endpoints.health}`
-      const response = await this.fetchWithTimeout(url)
+      const response = await this.fetchWithTimeout(url, {
+        headers: this.getAuthHeader(),
+      })
       const data = await response.json()
       return data
     } catch (error) {
@@ -217,7 +227,9 @@ class RagPipelineAPI {
     try {
       // Use cache endpoint stats if available
       const url = `${this.baseUrl}${this.endpoints.cache}/stats`
-      const response = await this.fetchWithTimeout(url)
+      const response = await this.fetchWithTimeout(url, {
+        headers: this.getAuthHeader(),
+      })
       const data = await response.json()
       return data
     } catch (error) {
