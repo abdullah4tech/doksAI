@@ -237,7 +237,7 @@ onMounted(() => {
                 placeholder="••••••••"
                 :disabled="isLoading"
                 @keydown="handleKeyDown"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
               />
               <button
                 type="button"
@@ -278,7 +278,7 @@ onMounted(() => {
                 placeholder="••••••••"
                 :disabled="isLoading"
                 @keydown="handleKeyDown"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                 :class="{
                   'border-red-300': confirmPassword && !passwordsMatch,
                 }"
@@ -302,15 +302,15 @@ onMounted(() => {
           </div>
 
           <!-- Terms checkbox -->
-          <div class="flex items-start gap-2">
+          <div class="flex items-center gap-3 mt-2">
             <input
               id="terms"
               v-model="agreeToTerms"
               type="checkbox"
               :disabled="isLoading"
-              class="mt-1 w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-2 focus:ring-sky-500 cursor-pointer disabled:cursor-not-allowed"
+              class="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-2 focus:ring-sky-500 cursor-pointer disabled:cursor-not-allowed flex-shrink-0"
             />
-            <label for="terms" class="text-xs text-gray-600">
+            <label for="terms" class="text-xs text-gray-600 leading-relaxed">
               I agree to the
               <a href="#" class="text-sky-600 hover:text-sky-700 transition-colors">
                 Terms of Service

@@ -159,24 +159,21 @@ const CurrentIcon = computed(() => currentStepData.value?.icon)
     ></div>
 
     <!-- Main container -->
-    <div class="w-full max-w-2xl mx-auto z-10">
-      <!-- Skip button (top right) -->
-      <button
-        @click="skipOnboarding"
-        class="absolute top-6 right-6 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-        aria-label="Skip onboarding"
-        title="Press ESC to skip"
-      >
-        Skip
-      </button>
-
+    <div class="w-full max-w-2xl mx-auto z-10 pt-6">
       <!-- Progress bar -->
-      <div class="mb-8">
-        <div class="flex justify-between items-center mb-2">
+      <div class="mb-12">
+        <div class="flex justify-between items-center mb-4">
           <span class="text-sm font-medium text-gray-700">
             Step {{ currentStep + 1 }} of {{ totalSteps }}
           </span>
-          <span class="text-sm text-gray-500">{{ Math.round(progress) }}%</span>
+          <button
+            @click="skipOnboarding"
+            class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            aria-label="Skip onboarding"
+            title="Press ESC to skip"
+          >
+            Skip
+          </button>
         </div>
         <div class="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
           <div
@@ -241,35 +238,35 @@ const CurrentIcon = computed(() => currentStepData.value?.icon)
         </div>
 
         <!-- Action buttons -->
-        <div class="flex items-center justify-between gap-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
           <!-- Back button -->
           <button
             v-if="canGoBack"
             @click="prevStep"
             :disabled="currentStep === 0"
-            class="px-6 py-3 text-gray-700 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            class="w-full sm:w-auto px-6 py-3 text-gray-700 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             aria-label="Go to previous step"
           >
             Back
           </button>
-          <div v-else></div>
+          <div v-else class="hidden sm:block"></div>
 
           <!-- Skip button (center, mobile friendly) -->
           <button
             v-if="!isLastStep"
             @click="skipStep"
-            class="px-6 py-3 text-gray-600 font-medium hover:text-gray-900 transition-colors"
+            class="w-full sm:w-auto px-6 py-3 text-gray-600 font-medium hover:text-gray-900 transition-colors"
             :aria-label="`Skip step ${currentStep + 1}`"
           >
             Skip this step
           </button>
-          <div v-else></div>
+          <div v-else class="hidden sm:block"></div>
 
           <!-- Next / Complete button -->
           <button
             v-if="!isLastStep"
             @click="nextStep"
-            class="px-8 py-3 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-medium rounded-lg hover:from-sky-600 hover:to-blue-700 transition-all duration-200 flex items-center gap-2"
+            class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-medium rounded-lg hover:from-sky-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2"
             aria-label="Go to next step"
           >
             Next
@@ -291,7 +288,7 @@ const CurrentIcon = computed(() => currentStepData.value?.icon)
           <button
             v-else
             @click="completeOnboarding"
-            class="px-8 py-3 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-medium rounded-lg hover:from-sky-600 hover:to-blue-700 transition-all duration-200 flex items-center gap-2"
+            class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-medium rounded-lg hover:from-sky-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2"
             aria-label="Complete onboarding and start using DoksAI"
           >
             Get Started

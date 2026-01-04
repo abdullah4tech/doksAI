@@ -25,7 +25,7 @@ const router = createRouter({
       path: '/onboarding',
       name: 'onboarding',
       component: OnboardingView,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: false },
     },
     {
       path: '/',
