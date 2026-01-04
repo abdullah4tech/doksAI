@@ -14,9 +14,7 @@ const authStore = useAuthStore()
 const name = ref('')
 const email = ref('')
 const password = ref('')
-const confirmPassword = ref('')
 const showPassword = ref(false)
-const showConfirmPassword = ref(false)
 const agreeToTerms = ref(false)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
@@ -25,7 +23,6 @@ const containerRef = ref()
 const formRef = ref()
 const logoRef = ref()
 
-const passwordsMatch = computed(() => password.value === confirmPassword.value)
 const passwordStrength = computed(() => {
   const pwd = password.value
   if (!pwd) return 0
@@ -52,18 +49,12 @@ const isFormValid = computed(
     name.value.trim() &&
     email.value.trim() &&
     password.value &&
-    confirmPassword.value &&
-    passwordsMatch.value &&
     passwordStrength.value >= 2 &&
     agreeToTerms.value,
 )
 
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value
-}
-
-const toggleConfirmPasswordVisibility = () => {
-  showConfirmPassword.value = !showConfirmPassword.value
 }
 
 const handleRegister = async () => {
@@ -263,42 +254,6 @@ onMounted(() => {
                 ></div>
               </div>
             </div>
-          </div>
-
-          <!-- Confirm password input -->
-          <div>
-            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">
-              Confirm password
-            </label>
-            <div class="relative">
-              <input
-                id="confirmPassword"
-                v-model="confirmPassword"
-                :type="showConfirmPassword ? 'text' : 'password'"
-                placeholder="••••••••"
-                :disabled="isLoading"
-                @keydown="handleKeyDown"
-                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-                :class="{
-                  'border-red-300': confirmPassword && !passwordsMatch,
-                }"
-              />
-              <button
-                type="button"
-                @click="toggleConfirmPasswordVisibility"
-                :disabled="isLoading"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors disabled:cursor-not-allowed"
-              >
-                <EyeIcon v-if="showConfirmPassword" class="w-5 h-5" />
-                <EyeSlashIcon v-else class="w-5 h-5" />
-              </button>
-            </div>
-            <p
-              v-if="confirmPassword && !passwordsMatch"
-              class="mt-1 text-xs text-red-600"
-            >
-              Passwords do not match
-            </p>
           </div>
 
           <!-- Terms checkbox -->
