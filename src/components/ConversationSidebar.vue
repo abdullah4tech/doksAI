@@ -3,6 +3,8 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter, useRoute } from 'vue-router'
 import { useChatStore } from '@/store'
+import { useBookmarksStore } from '@/store/bookmarks'
+import { useLabelsStore } from '@/store/labels'
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -11,11 +13,15 @@ import {
   ArchiveBoxIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  StarIcon,
 } from '@heroicons/vue/24/outline'
+import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid'
 
 const router = useRouter()
 const route = useRoute()
 const chatStore = useChatStore()
+const bookmarksStore = useBookmarksStore()
+const labelsStore = useLabelsStore()
 
 const searchQuery = ref('')
 const debouncedSearchQuery = ref('')
@@ -107,6 +113,11 @@ const archiveSession = (sessionId: string, event: Event) => {
   if (route.params.id === sessionId) {
     router.push('/')
   }
+}
+
+const toggleSessionBookmark = (sessionId: string, event: Event) => {
+  event.stopPropagation()
+  bookmarksStore.toggleSessionBookmark(sessionId)
 }
 
 const formatTime = (date: Date) => {
@@ -229,12 +240,46 @@ const groupedSessions = computed(() => {
                 </p>
               </div>
 
+              <!-- Label Badges -->
+              <div
+                v-if="session.labels && session.labels.length > 0"
+                class="flex flex-wrap gap-1 mt-1 mb-2"
+              >
+                <div
+                  v-for="labelId in session.labels.slice(0, 2)"
+                  :key="labelId"
+                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white"
+                  :style="{ backgroundColor: labelsStore.getLabelById(labelId)?.color }"
+                  :title="labelsStore.getLabelById(labelId)?.name"
+                >
+                  {{ labelsStore.getLabelById(labelId)?.name }}
+                </div>
+                <div
+                  v-if="session.labels.length > 2"
+                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-700"
+                >
+                  +{{ session.labels.length - 2 }}
+                </div>
+              </div>
+
               <!-- Hover Actions -->
               <div
                 class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-white via-white to-transparent pl-4"
                 :class="{ 'from-gray-200 via-gray-200': route.params.id !== session.id && false }"
               >
                 <!-- Adjust gradient if needed -->
+                <button
+                  @click="toggleSessionBookmark(session.id, $event)"
+                  class="p-1 hover:bg-yellow-50 rounded text-gray-400 hover:text-yellow-500 transition-colors"
+                  :title="
+                    bookmarksStore.isSessionBookmarked(session.id) ? 'Remove bookmark' : 'Bookmark'
+                  "
+                >
+                  <component
+                    :is="bookmarksStore.isSessionBookmarked(session.id) ? StarIconSolid : StarIcon"
+                    class="w-4 h-4"
+                  />
+                </button>
                 <button
                   @click="archiveSession(session.id, $event)"
                   class="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-gray-600"
