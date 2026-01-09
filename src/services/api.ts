@@ -116,6 +116,7 @@ export interface StatsResponse {
 }
 
 import config from '@/config'
+import { fetchWithAuthAndTimeout } from '@/utils/apiInterceptor'
 
 class RagPipelineAPI {
   private baseUrl: string
@@ -128,25 +129,10 @@ class RagPipelineAPI {
     this.timeout = config.API_TIMEOUT
   }
 
-  // Helper: get authorization header
+  // Helper: get authorization header (not needed with interceptor, but kept for compatibility)
   private getAuthHeader(): HeadersInit {
     const token = localStorage.getItem('auth_token')
     return token ? { Authorization: `Bearer ${token}` } : {}
-  }
-
-  // Helper: fetch with timeout using AbortController
-  private async fetchWithTimeout(input: RequestInfo, init?: RequestInit) {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout)
-    try {
-      const options = Object.assign({}, init || {}, { signal: controller.signal })
-      const res = await fetch(input, options)
-      clearTimeout(timeoutId)
-      return res
-    } catch (err) {
-      clearTimeout(timeoutId)
-      throw err
-    }
   }
 
   // Helper method to handle API failures and notify the status store
@@ -174,14 +160,17 @@ class RagPipelineAPI {
   async ingestDocument(request: IngestRequest): Promise<IngestResponse> {
     try {
       const url = `${this.baseUrl}${this.endpoints.ingest}`
-      const response = await this.fetchWithTimeout(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeader(),
+      const response = await fetchWithAuthAndTimeout(
+        url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(request),
         },
-        body: JSON.stringify(request),
-      })
+        this.timeout,
+      )
 
       const data = await response.json()
       return data
@@ -193,14 +182,17 @@ class RagPipelineAPI {
   async queryDocuments(request: QueryRequest): Promise<QueryResponse> {
     try {
       const url = `${this.baseUrl}${this.endpoints.query}`
-      const response = await this.fetchWithTimeout(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeader(),
+      const response = await fetchWithAuthAndTimeout(
+        url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(request),
         },
-        body: JSON.stringify(request),
-      })
+        this.timeout,
+      )
 
       const data = await response.json()
       return data
@@ -212,9 +204,7 @@ class RagPipelineAPI {
   async getHealth(): Promise<HealthResponse> {
     try {
       const url = `${this.baseUrl}${this.endpoints.health}`
-      const response = await this.fetchWithTimeout(url, {
-        headers: this.getAuthHeader(),
-      })
+      const response = await fetchWithAuthAndTimeout(url, {}, this.timeout)
       const data = await response.json()
       return data
     } catch (error) {
@@ -227,9 +217,7 @@ class RagPipelineAPI {
     try {
       // Use cache endpoint stats if available
       const url = `${this.baseUrl}${this.endpoints.cache}/stats`
-      const response = await this.fetchWithTimeout(url, {
-        headers: this.getAuthHeader(),
-      })
+      const response = await fetchWithAuthAndTimeout(url, {}, this.timeout)
       const data = await response.json()
       return data
     } catch (error) {
