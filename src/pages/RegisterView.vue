@@ -3,9 +3,11 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { authAPI } from '@/services/authAPI'
+import { handleError, handleSuccess } from '@/utils/errorHandler'
 import { useMotion } from '@vueuse/motion'
 import gsap from 'gsap'
 import LogoText from '@/components/LogoText.vue'
+import OnboardingModal from '@/components/OnboardingModal.vue'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
@@ -17,7 +19,7 @@ const password = ref('')
 const showPassword = ref(false)
 const agreeToTerms = ref(false)
 const isLoading = ref(false)
-const error = ref<string | null>(null)
+const showOnboarding = ref(false)
 
 const containerRef = ref()
 const formRef = ref()
@@ -58,10 +60,10 @@ const togglePasswordVisibility = () => {
 }
 
 const handleRegister = async () => {
-  error.value = null
-
   if (!isFormValid.value) {
-    error.value = 'Please complete all fields correctly'
+    handleError('Registration', new Error('Please complete all fields correctly'), {
+      customUserMessage: 'Please complete all fields correctly',
+    })
     return
   }
 
@@ -75,13 +77,27 @@ const handleRegister = async () => {
     })
 
     authStore.setAuth(response)
-    router.push('/c')
+    // Set onboarding requirement with user ID from response
+    authStore.setOnboardingRequired(response.data.user.id)
+
+    // Show success message
+    handleSuccess('Account created successfully!', {
+      description: 'Welcome to DoksAI',
+      toastDuration: 2000,
+    })
+
+    // Show onboarding modal instead of navigating
+    showOnboarding.value = true
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Registration failed'
-    authStore.setError(error.value)
+    handleError('Registration', err)
   } finally {
     isLoading.value = false
   }
+}
+
+const handleOnboardingComplete = () => {
+  // Navigate to home after onboarding is completed
+  router.push('/')
 }
 
 const handleKeyDown = (e: KeyboardEvent) => {
@@ -144,12 +160,9 @@ onMounted(() => {
     <div
       class="absolute inset-0 opacity-5 pointer-events-none"
       style="
-        background-image: linear-gradient(
-          90deg,
-          #e5e7eb 1px,
-          transparent 1px
-        ),
-        linear-gradient(#e5e7eb 1px, transparent 1px);
+        background-image:
+          linear-gradient(90deg, #e5e7eb 1px, transparent 1px),
+          linear-gradient(#e5e7eb 1px, transparent 1px);
         background-size: 50px 50px;
       "
     ></div>
@@ -163,22 +176,11 @@ onMounted(() => {
       </div>
 
       <!-- Form card -->
-      <div
-        ref="formRef"
-        class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8"
-      >
+      <div ref="formRef" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8">
         <!-- Heading -->
         <div class="mb-6">
           <h1 class="text-2xl font-bold text-gray-900 mb-2">Get started</h1>
           <p class="text-sm text-gray-600">Join us to analyze your documents</p>
-        </div>
-
-        <!-- Error message -->
-        <div
-          v-if="error"
-          class="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg"
-        >
-          <p class="text-sm text-red-700">{{ error }}</p>
         </div>
 
         <!-- Form -->
@@ -333,4 +335,11 @@ onMounted(() => {
       </p>
     </div>
   </div>
+
+  <!-- Onboarding modal (shown after successful registration) -->
+  <OnboardingModal
+    :is-open="showOnboarding"
+    @update:is-open="showOnboarding = $event"
+    @onboarding-complete="handleOnboardingComplete"
+  />
 </template>
