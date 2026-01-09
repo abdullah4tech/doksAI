@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { authAPI } from '@/services/authAPI'
+import { handleError, handleSuccess } from '@/utils/errorHandler'
 import { useMotion } from '@vueuse/motion'
 import gsap from 'gsap'
 import LogoText from '@/components/LogoText.vue'
@@ -16,7 +17,6 @@ const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const isLoading = ref(false)
-const error = ref<string | null>(null)
 
 const containerRef = ref()
 const formRef = ref()
@@ -27,10 +27,10 @@ const togglePasswordVisibility = () => {
 }
 
 const handleLogin = async () => {
-  error.value = null
-
   if (!email.value || !password.value) {
-    error.value = 'Please fill in all fields'
+    handleError('Login', new Error('Please fill in all fields'), {
+      customUserMessage: 'Please fill in all fields',
+    })
     return
   }
 
@@ -44,12 +44,17 @@ const handleLogin = async () => {
 
     authStore.setAuth(response)
 
+    // Show success message
+    handleSuccess('Welcome back!', {
+      description: 'Login successful',
+      toastDuration: 2000,
+    })
+
     // Redirect to previous page or home
-    const redirectTo = (route.query.redirect as string) || '/c'
+    const redirectTo = (route.query.redirect as string) || '/'
     router.push(redirectTo)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Login failed'
-    authStore.setError(error.value)
+    handleError('Login', err)
   } finally {
     isLoading.value = false
   }
@@ -115,12 +120,9 @@ onMounted(() => {
     <div
       class="absolute inset-0 opacity-5 pointer-events-none"
       style="
-        background-image: linear-gradient(
-          90deg,
-          #e5e7eb 1px,
-          transparent 1px
-        ),
-        linear-gradient(#e5e7eb 1px, transparent 1px);
+        background-image:
+          linear-gradient(90deg, #e5e7eb 1px, transparent 1px),
+          linear-gradient(#e5e7eb 1px, transparent 1px);
         background-size: 50px 50px;
       "
     ></div>
@@ -134,22 +136,11 @@ onMounted(() => {
       </div>
 
       <!-- Form card -->
-      <div
-        ref="formRef"
-        class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8"
-      >
+      <div ref="formRef" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8">
         <!-- Heading -->
         <div class="mb-6">
           <h1 class="text-2xl font-bold text-gray-900 mb-2">Welcome back</h1>
           <p class="text-sm text-gray-600">Sign in to your account to continue</p>
-        </div>
-
-        <!-- Error message -->
-        <div
-          v-if="error"
-          class="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg"
-        >
-          <p class="text-sm text-red-700">{{ error }}</p>
         </div>
 
         <!-- Form -->
