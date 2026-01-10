@@ -14,8 +14,17 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   StarIcon,
+  XMarkIcon,
 } from '@heroicons/vue/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid'
+
+const props = defineProps<{
+  mobileOpen?: boolean
+}>()
+
+const emit = defineEmits<{
+  'update:mobileOpen': [value: boolean]
+}>()
 
 const router = useRouter()
 const route = useRoute()
@@ -86,17 +95,18 @@ const filteredSessions = computed(() => {
 
 const createNewChat = () => {
   router.push('/')
-  // On mobile, we might want to close the sidebar here if it was an overlay
-  if (window.innerWidth < 640) {
-    isCollapsed.value = true
-  }
+  // Close mobile sidebar
+  emit('update:mobileOpen', false)
 }
 
 const selectSession = (sessionId: string) => {
   router.push(`/c/${sessionId}`)
-  if (window.innerWidth < 640) {
-    isCollapsed.value = true
-  }
+  // Close mobile sidebar
+  emit('update:mobileOpen', false)
+}
+
+const closeMobileSidebar = () => {
+  emit('update:mobileOpen', false)
 }
 
 const deleteSession = (sessionId: string, event: Event) => {
@@ -155,11 +165,33 @@ const groupedSessions = computed(() => {
 </script>
 
 <template>
+  <!-- Mobile Overlay Backdrop -->
+  <Transition name="fade">
+    <div
+      v-if="mobileOpen"
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 sm:hidden"
+      @click="closeMobileSidebar"
+    ></div>
+  </Transition>
+
+  <!-- Sidebar -->
   <div
-    class="flex flex-col h-full bg-gray-50 border-r border-gray-200 transition-all duration-300 ease-in-out relative"
-    :class="[isCollapsed ? 'w-0 sm:w-16' : 'w-full sm:w-[280px]']"
+    class="flex flex-col h-full bg-gray-50 border-r border-gray-200 transition-all duration-300 ease-in-out relative z-50"
+    :class="[
+      isCollapsed ? 'w-0 sm:w-16' : 'w-[280px]',
+      mobileOpen ? 'fixed inset-y-0 left-0 sm:relative' : 'hidden sm:flex'
+    ]"
   >
-    <!-- Toggle Button -->
+    <!-- Mobile Close Button -->
+    <button
+      v-if="mobileOpen"
+      @click="closeMobileSidebar"
+      class="absolute top-4 right-4 sm:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors z-10"
+    >
+      <XMarkIcon class="w-5 h-5" />
+    </button>
+
+    <!-- Toggle Button (Desktop) -->
     <button
       @click="toggleSidebar"
       class="absolute -right-3 top-6 bg-white border border-gray-200 rounded-full p-1 shadow-sm hover:bg-gray-50 z-20 hidden sm:block"
@@ -319,5 +351,16 @@ const groupedSessions = computed(() => {
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background-color: #e5e7eb;
   border-radius: 20px;
+}
+
+/* Fade transition for backdrop */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

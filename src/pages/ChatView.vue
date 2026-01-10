@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, nextTick, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import LogoText from '@/components/LogoText.vue'
 import ResponseIcon from '@/assets/ResponseIcon.vue'
 import ConversationSidebar from '@/components/ConversationSidebar.vue'
 import { useChatStore } from '@/store'
@@ -11,6 +10,7 @@ import {
   ArrowPathIcon,
   PencilSquareIcon,
   CheckIcon,
+  Bars3Icon,
 } from '@heroicons/vue/24/outline'
 
 const route = useRoute()
@@ -22,6 +22,7 @@ const messagesContainer = ref<HTMLElement>()
 const editingMessageId = ref<number | null>(null)
 const editContent = ref('')
 const copiedMessageId = ref<number | null>(null)
+const mobileMenuOpen = ref(false)
 
 const sessionId = computed(() => route.params.id as string)
 
@@ -291,20 +292,22 @@ const regenerateResponse = async () => {
 <template>
   <div class="flex h-screen bg-white overflow-hidden">
     <!-- Sidebar -->
-    <ConversationSidebar />
+    <ConversationSidebar v-model:mobile-open="mobileMenuOpen" />
 
     <!-- Main Chat Area -->
     <div class="flex-1 flex flex-col h-full min-w-0 relative">
+      <!-- Header -->
       <header
         class="px-4 sm:px-6 lg:px-8 py-3 pt-4 sm:py-4 flex items-center justify-between bg-white border-b border-gray-100 z-10"
       >
         <div class="flex items-center gap-3">
-          <!-- Mobile Sidebar Toggle (could be implemented if sidebar supports mobile overlay) -->
-          <!-- For now, sidebar handles its own responsiveness via CSS classes -->
-
-          <router-link to="/">
-            <LogoText class="text-xl sm:text-2xl font-semibold" />
-          </router-link>
+          <!-- Mobile menu button visible only on mobile -->
+          <button
+            @click="mobileMenuOpen = true"
+            class="sm:hidden p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <Bars3Icon class="w-5 h-5" />
+          </button>
         </div>
         <button
           @click="startNewChat"
@@ -313,6 +316,15 @@ const regenerateResponse = async () => {
           New Chat
         </button>
       </header>
+
+      <!-- Mobile Menu Button (Fixed position for when scrolling) -->
+      <button
+        @click="mobileMenuOpen = true"
+        class="fixed top-4 left-4 sm:hidden p-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 z-30 transition-colors md:hidden"
+        style="display: none;"
+      >
+        <Bars3Icon class="w-6 h-6 text-gray-600" />
+      </button>
 
       <div ref="messagesContainer" class="flex-1 overflow-y-auto">
         <div v-for="message in chatStore.messages" :key="message.id" class="py-4 sm:py-6">

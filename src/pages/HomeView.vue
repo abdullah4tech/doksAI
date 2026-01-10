@@ -6,6 +6,7 @@ import PdfModal from '@/components/PdfModal.vue'
 import ApiStatusIndicator from '@/components/ApiStatusIndicator.vue'
 import InteractiveGridPattern from '@/components/InteractiveGridPattern.vue'
 import ConversationSidebar from '@/components/ConversationSidebar.vue'
+import { Bars3Icon } from '@heroicons/vue/24/outline'
 import { ref, onMounted } from 'vue'
 import { useChatStore } from '@/store'
 import { useMotion } from '@vueuse/motion'
@@ -16,6 +17,7 @@ const chatStore = useChatStore()
 
 const message = ref<string>('')
 const showPdfModal = ref(false)
+const mobileMenuOpen = ref(false)
 const logoRef = ref()
 const inputContainerRef = ref()
 const uploadButtonRef = ref()
@@ -124,12 +126,20 @@ onMounted(() => {
 <template>
   <div class="flex h-screen bg-white overflow-hidden">
     <!-- Sidebar -->
-    <ConversationSidebar />
+    <ConversationSidebar v-model:mobile-open="mobileMenuOpen" />
 
     <!-- Main content area -->
     <div
       class="flex-1 flex flex-col justify-center items-center min-h-screen px-4 sm:px-6 lg:px-8 relative overflow-hidden"
     >
+      <!-- Mobile Menu Button -->
+      <button
+        @click="mobileMenuOpen = true"
+        class="fixed top-4 left-4 sm:hidden p-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 z-30 transition-colors"
+      >
+        <Bars3Icon class="w-6 h-6 text-gray-600" />
+      </button>
+
       <!-- Interactive Grid Pattern Background -->
       <InteractiveGridPattern
         :class="'[mask-image:radial-gradient(600px_circle_at_center,white,transparent)]'"
