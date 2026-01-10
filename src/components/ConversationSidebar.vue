@@ -85,9 +85,11 @@ const filteredSessions = computed(() => {
 })
 
 const createNewChat = () => {
-  const sessionId = chatStore.createSession()
-  router.push(`/c/${sessionId}`)
+  router.push('/')
   // On mobile, we might want to close the sidebar here if it was an overlay
+  if (window.innerWidth < 640) {
+    isCollapsed.value = true
+  }
 }
 
 const selectSession = (sessionId: string) => {
