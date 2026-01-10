@@ -321,7 +321,7 @@ const regenerateResponse = async () => {
       <button
         @click="mobileMenuOpen = true"
         class="fixed top-4 left-4 sm:hidden p-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 z-30 transition-colors md:hidden"
-        style="display: none;"
+        style="display: none"
       >
         <Bars3Icon class="w-6 h-6 text-gray-600" />
       </button>

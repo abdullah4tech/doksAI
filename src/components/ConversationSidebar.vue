@@ -165,21 +165,23 @@ const groupedSessions = computed(() => {
 </script>
 
 <template>
-  <!-- Mobile Overlay Backdrop -->
+  <!-- Mobile Overlay Backdrop with Blur -->
   <Transition name="fade">
     <div
       v-if="mobileOpen"
-      class="fixed inset-0 bg-black bg-opacity-50 z-40 sm:hidden"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 sm:hidden"
       @click="closeMobileSidebar"
     ></div>
   </Transition>
 
   <!-- Sidebar -->
   <div
-    class="flex flex-col h-full bg-gray-50 border-r border-gray-200 transition-all duration-300 ease-in-out relative z-50"
+    class="bg-gray-50 border-r border-gray-200 transition-all duration-300 ease-in-out shadow-xl"
     :class="[
       isCollapsed ? 'w-0 sm:w-16' : 'w-[280px]',
-      mobileOpen ? 'fixed inset-y-0 left-0 sm:relative' : 'hidden sm:flex'
+      mobileOpen 
+        ? 'fixed inset-y-0 left-0 z-50 flex flex-col h-full sm:relative' 
+        : 'hidden sm:flex sm:flex-col sm:h-full sm:relative',
     ]"
   >
     <!-- Mobile Close Button -->
