@@ -6,6 +6,7 @@ export interface Message {
   isStreaming?: boolean
   sources?: QuerySource[]
   confidence?: number
+  isBookmarked?: boolean
 }
 
 export interface ChatSession {
@@ -15,6 +16,15 @@ export interface ChatSession {
   createdAt: Date
   updatedAt: Date
   isArchived?: boolean
+  labels?: string[]
+  isBookmarked?: boolean
+}
+
+export interface Label {
+  id: string
+  name: string
+  color: string
+  createdAt: Date
 }
 
 export interface Document {

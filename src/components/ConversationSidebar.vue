@@ -3,6 +3,8 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter, useRoute } from 'vue-router'
 import { useChatStore } from '@/store'
+import { useBookmarksStore } from '@/store/bookmarks'
+import { useLabelsStore } from '@/store/labels'
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -11,11 +13,24 @@ import {
   ArchiveBoxIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  StarIcon,
+  XMarkIcon,
 } from '@heroicons/vue/24/outline'
+import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid'
+
+const props = defineProps<{
+  mobileOpen?: boolean
+}>()
+
+const emit = defineEmits<{
+  'update:mobileOpen': [value: boolean]
+}>()
 
 const router = useRouter()
 const route = useRoute()
 const chatStore = useChatStore()
+const bookmarksStore = useBookmarksStore()
+const labelsStore = useLabelsStore()
 
 const searchQuery = ref('')
 const debouncedSearchQuery = ref('')
@@ -79,16 +94,19 @@ const filteredSessions = computed(() => {
 })
 
 const createNewChat = () => {
-  const sessionId = chatStore.createSession()
-  router.push(`/c/${sessionId}`)
-  // On mobile, we might want to close the sidebar here if it was an overlay
+  router.push('/')
+  // Close mobile sidebar
+  emit('update:mobileOpen', false)
 }
 
 const selectSession = (sessionId: string) => {
   router.push(`/c/${sessionId}`)
-  if (window.innerWidth < 640) {
-    isCollapsed.value = true
-  }
+  // Close mobile sidebar
+  emit('update:mobileOpen', false)
+}
+
+const closeMobileSidebar = () => {
+  emit('update:mobileOpen', false)
 }
 
 const deleteSession = (sessionId: string, event: Event) => {
@@ -107,6 +125,11 @@ const archiveSession = (sessionId: string, event: Event) => {
   if (route.params.id === sessionId) {
     router.push('/')
   }
+}
+
+const toggleSessionBookmark = (sessionId: string, event: Event) => {
+  event.stopPropagation()
+  bookmarksStore.toggleSessionBookmark(sessionId)
 }
 
 const formatTime = (date: Date) => {
@@ -142,11 +165,35 @@ const groupedSessions = computed(() => {
 </script>
 
 <template>
+  <!-- Mobile Overlay Backdrop with Blur -->
+  <Transition name="fade">
+    <div
+      v-if="mobileOpen"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 sm:hidden"
+      @click="closeMobileSidebar"
+    ></div>
+  </Transition>
+
+  <!-- Sidebar -->
   <div
-    class="flex flex-col h-full bg-gray-50 border-r border-gray-200 transition-all duration-300 ease-in-out relative"
-    :class="[isCollapsed ? 'w-0 sm:w-16' : 'w-full sm:w-[280px]']"
+    class="bg-gray-50 border-r border-gray-200 transition-all duration-300 ease-in-out shadow-xl"
+    :class="[
+      isCollapsed ? 'w-0 sm:w-16' : 'w-[280px]',
+      mobileOpen 
+        ? 'fixed inset-y-0 left-0 z-50 flex flex-col h-full sm:relative' 
+        : 'hidden sm:flex sm:flex-col sm:h-full sm:relative',
+    ]"
   >
-    <!-- Toggle Button -->
+    <!-- Mobile Close Button -->
+    <button
+      v-if="mobileOpen"
+      @click="closeMobileSidebar"
+      class="absolute top-4 right-4 sm:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors z-10"
+    >
+      <XMarkIcon class="w-5 h-5" />
+    </button>
+
+    <!-- Toggle Button (Desktop) -->
     <button
       @click="toggleSidebar"
       class="absolute -right-3 top-6 bg-white border border-gray-200 rounded-full p-1 shadow-sm hover:bg-gray-50 z-20 hidden sm:block"
@@ -229,12 +276,46 @@ const groupedSessions = computed(() => {
                 </p>
               </div>
 
+              <!-- Label Badges -->
+              <div
+                v-if="session.labels && session.labels.length > 0"
+                class="flex flex-wrap gap-1 mt-1 mb-2"
+              >
+                <div
+                  v-for="labelId in session.labels.slice(0, 2)"
+                  :key="labelId"
+                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white"
+                  :style="{ backgroundColor: labelsStore.getLabelById(labelId)?.color }"
+                  :title="labelsStore.getLabelById(labelId)?.name"
+                >
+                  {{ labelsStore.getLabelById(labelId)?.name }}
+                </div>
+                <div
+                  v-if="session.labels.length > 2"
+                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-700"
+                >
+                  +{{ session.labels.length - 2 }}
+                </div>
+              </div>
+
               <!-- Hover Actions -->
               <div
                 class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-white via-white to-transparent pl-4"
                 :class="{ 'from-gray-200 via-gray-200': route.params.id !== session.id && false }"
               >
                 <!-- Adjust gradient if needed -->
+                <button
+                  @click="toggleSessionBookmark(session.id, $event)"
+                  class="p-1 hover:bg-yellow-50 rounded text-gray-400 hover:text-yellow-500 transition-colors"
+                  :title="
+                    bookmarksStore.isSessionBookmarked(session.id) ? 'Remove bookmark' : 'Bookmark'
+                  "
+                >
+                  <component
+                    :is="bookmarksStore.isSessionBookmarked(session.id) ? StarIconSolid : StarIcon"
+                    class="w-4 h-4"
+                  />
+                </button>
                 <button
                   @click="archiveSession(session.id, $event)"
                   class="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-gray-600"
@@ -272,5 +353,16 @@ const groupedSessions = computed(() => {
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background-color: #e5e7eb;
   border-radius: 20px;
+}
+
+/* Fade transition for backdrop */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
