@@ -18,7 +18,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid'
 
-const props = defineProps<{
+defineProps<{
   mobileOpen?: boolean
 }>()
 
@@ -267,7 +267,7 @@ const groupedSessions = computed(() => {
               }"
             >
               <ChatBubbleLeftIcon class="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <div class="flex-1 min-w-0">
+              <div v-if="!isCollapsed" class="flex-1 min-w-0">
                 <p class="text-sm text-gray-700 font-medium truncate">
                   {{ session.title || 'New Chat' }}
                 </p>
@@ -278,7 +278,7 @@ const groupedSessions = computed(() => {
 
               <!-- Label Badges -->
               <div
-                v-if="session.labels && session.labels.length > 0"
+                v-if="!isCollapsed && session.labels && session.labels.length > 0"
                 class="flex flex-wrap gap-1 mt-1 mb-2"
               >
                 <div
@@ -336,7 +336,7 @@ const groupedSessions = computed(() => {
         </div>
       </template>
 
-      <div v-if="filteredSessions.length === 0" class="text-center py-8">
+      <div v-if="!isCollapsed && filteredSessions.length === 0" class="text-center py-8">
         <p class="text-sm text-gray-500">No conversations found</p>
       </div>
     </div>
