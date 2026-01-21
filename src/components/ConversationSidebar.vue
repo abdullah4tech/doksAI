@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter, useRoute } from 'vue-router'
 import { useChatStore } from '@/store'
 import { useBookmarksStore } from '@/store/bookmarks'
 import { useLabelsStore } from '@/store/labels'
+import LogoText from '@/components/LogoText.vue'
+import faviconUrl from '@/assets/favicon.png'
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -36,6 +38,7 @@ const searchQuery = ref('')
 const debouncedSearchQuery = ref('')
 const searchInput = ref<HTMLInputElement | null>(null)
 const isCollapsed = ref(false)
+const isSidebarHovered = ref(false)
 
 // Debounce search update
 const updateSearch = useDebounceFn((value: string) => {
@@ -79,6 +82,14 @@ const handleGlobalKeydown = (e: KeyboardEvent) => {
 const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value
   localStorage.setItem('sidebar_collapsed', JSON.stringify(isCollapsed.value))
+}
+
+const expandAndFocusSearch = () => {
+  isCollapsed.value = false
+  localStorage.setItem('sidebar_collapsed', JSON.stringify(false))
+  nextTick(() => {
+    searchInput.value?.focus()
+  })
 }
 
 const filteredSessions = computed(() => {
@@ -183,6 +194,8 @@ const groupedSessions = computed(() => {
         ? 'fixed inset-y-0 left-0 z-50 flex flex-col h-full sm:relative' 
         : 'hidden sm:flex sm:flex-col sm:h-full sm:relative',
     ]"
+    @mouseenter="isSidebarHovered = true"
+    @mouseleave="isSidebarHovered = false"
   >
     <!-- Mobile Close Button -->
     <button
@@ -193,30 +206,67 @@ const groupedSessions = computed(() => {
       <XMarkIcon class="w-5 h-5" />
     </button>
 
-    <!-- Toggle Button (Desktop) -->
-    <button
-      @click="toggleSidebar"
-      class="absolute -right-3 top-6 bg-white border border-gray-200 rounded-full p-1 shadow-sm hover:bg-gray-50 z-20 hidden sm:block"
-    >
-      <ChevronRightIcon v-if="isCollapsed" class="w-4 h-4 text-gray-500" />
-      <ChevronLeftIcon v-else class="w-4 h-4 text-gray-500" />
-    </button>
+    <!-- Logo / Expand Button Header -->
+    <div class="p-4 flex items-center justify-center relative" :class="{ 'px-2': isCollapsed }">
+      <Transition name="fade" mode="out-in">
+        <!-- Show expand button on hover when collapsed -->
+        <button
+          v-if="isCollapsed && isSidebarHovered"
+          key="expand-btn"
+          @click="toggleSidebar"
+          class="p-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+          title="Expand sidebar"
+        >
+          <ChevronRightIcon class="w-5 h-5 text-gray-500" />
+        </button>
+        <!-- Show favicon when collapsed but not hovered -->
+        <img
+          v-else-if="isCollapsed"
+          key="favicon"
+          :src="faviconUrl"
+          alt="DoksAI"
+          class="w-8 h-8"
+        />
+        <!-- Show full logo when expanded -->
+        <div v-else key="logo">
+          <LogoText class="text-lg font-bold text-gray-800" />
+        </div>
+      </Transition>
+      <!-- Collapse button (only when expanded) - positioned absolutely -->
+      <button
+        v-if="!isCollapsed"
+        @click="toggleSidebar"
+        class="absolute right-4 p-1 hover:bg-gray-200 rounded-lg transition-colors hidden sm:block"
+        title="Collapse sidebar"
+      >
+        <ChevronLeftIcon class="w-4 h-4 text-gray-500" />
+      </button>
+    </div>
 
     <!-- Header & New Chat -->
-    <div class="p-4" :class="{ 'px-2': isCollapsed }">
+    <div class="px-4 pb-4" :class="{ 'px-2': isCollapsed }">
       <button
         @click="createNewChat"
-        class="w-full flex items-center gap-2 bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm text-gray-700 font-medium py-2.5 px-3 rounded-lg transition-all duration-200"
-        :class="{ 'justify-center': isCollapsed }"
+        class="w-full h-11 flex items-center justify-center gap-2 bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm text-gray-700 font-medium py-2.5 px-3 rounded-lg transition-all duration-200"
       >
-        <PlusIcon class="w-5 h-5" />
+        <PlusIcon class="w-5 h-5 flex-shrink-0" />
         <span v-if="!isCollapsed" class="truncate">New Chat</span>
       </button>
     </div>
 
     <!-- Search -->
-    <div v-if="!isCollapsed" class="px-4 mb-2">
-      <div class="relative">
+    <div class="px-4 mb-2" :class="{ 'px-2': isCollapsed }">
+      <!-- Collapsed: Search icon button -->
+      <button
+        v-if="isCollapsed"
+        @click="expandAndFocusSearch"
+        class="w-full h-10 flex items-center justify-center bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm rounded-lg transition-all duration-200"
+        title="Search chats (Ctrl+K)"
+      >
+        <MagnifyingGlassIcon class="w-5 h-5 text-gray-500" />
+      </button>
+      <!-- Expanded: Full search input -->
+      <div v-else class="relative">
         <MagnifyingGlassIcon
           class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
         />
